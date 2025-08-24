@@ -42,19 +42,19 @@ Or just have both done for you by running
 this may be useful on distros which don't have qmake in the default
 user path).
 
-NB In either case you do almost certainly do need your QTDIR 
+NB In either case you do almost certainly DO need your QTDIR 
 environment variable to be correctly defined.
 
 This will give you a "fracplanet" executable which you can run with
   ./fracplanet
 or install where you like. 
 
-[The author tests on RedHat8 & 9, and Debian testing (sarge).]
+[The author primarily uses Debian Sarge these days].
 
 BUILD OPTIONS
 =============
 There are already some generally effective overrides for 
-Qt's fairly conservative (at least on RedHat) compile options 
+Qt's usually fairly conservative compile options 
 in the fracplanet.pro file (where QMAKE_CXXFLAGS_RELEASE is
 modified).  If you change them, do a "make distclean" before 
 you rebuild to make sure Makefiles are rebuilt. 
@@ -67,30 +67,38 @@ and rebuild from clean (again, "make distclean" is a good idea).
 I've no idea how much benefit these provide.
 You can also use these with the ./BUILD script e.g "./BUILD p4"
 
+BUILD PROBLEMS
+==============
+- For a Debian system with nvidia-glx it is perhaps necessary to have
+nvidia-glx-dev installed when you build otherwise the application does
+not function properly.
+
 USAGE
 =====
 User documentation is contained in fracplanet.htm
 If you just want to dive in all you need to know is this:
-  After changing ANY of the terrain generation parameters, you must 
-  hit "regenerate" to create and display a new model.
-  This keeps the random seeds for terrain and river generation the same.
-  There are a couple of extra buttons which also change the random seed 
-  for the terrain or river network before regenerating,
-  Most of the parameter entry fields have tooltips on them which 
-  give an idea of what they're about.
+  
+After changing ANY of the terrain generation parameters, you must 
+hit "regenerate" to create and display a new model.
+This keeps the random seeds for terrain and river generation the same.
+There are a couple of extra buttons which also change the random seed 
+for the terrain or river network before regenerating,
+Most of the parameter entry fields have tooltips on them which 
+give an idea of what they're about.
+To begin with it's best to start by making small changes
+to most parameters, especially the number of subdivisions.
 
 PERFORMANCE
 ===========
 The biggest factor influencing performance (both generation and 
-display) is the degree of subdivision.  At subdivision level 8 
-(for a planet) around 200MB of memory is required.  Subdivision level 9 
-is not very well tested and appears to have some problems (see BUGS file).
-On a 2.4GHz machine with a GeForce4 and the Nvidia OpenGL drivers display 
-rates start to suffer around subdivision level 7.
-
-When generating many rivers at high levels of subdivision, the 
-river generation progress bar may stall for long periods 
-(this is generally due to a large lake being formed somewhere).
+display) is the degree of subdivision.  For 9 subdivisions
+(for a planet) around 260MB of memory is required.  10 subdivisions
+needs just over a gigabyte.  Needless to say, if it starts swapping,
+it's not pretty.  
+On a 2.4GHz machine with a GeForce4(well, an "MX") and the Nvidia OpenGL
+drivers display rates start to suffer around subdivision level 7.
+I'd be interested to hear how the 6800 series cards handle 20000000 triangles.
+See the BUGS file for other issues.
 
 INSTALL
 =======
@@ -104,10 +112,10 @@ Obviously you'll probably need to be root for this stage.
 
 RAY TRACING OUTPUT
 ==================
-Once you have run fracplanet and saved a planet/landscape 
+Once you've run fracplanet and saved a planet/landscape 
 (as e.g terrain.pov and terrain.inc), do e.g
   povray -Q9 -geometry 768x576 terrain.pov
-Expect to get a lot of "determinant too small" messages, 
+Expect to get MANY "determinant too small" messages, 
 especially when using high degrees of subdivision.
 It takes POVRay a LOT longer to read large models than
 to render them, so make the most of it once it's loaded
@@ -128,4 +136,3 @@ For bug reports, feedback and patches:
   Tobias Klausmann 
   Frank Plohmann 
   Steve Roylance 
-

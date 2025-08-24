@@ -1,3 +1,14 @@
+From release 0.1.0:
+ - Bump version number to 0.2.0
+ - Progress dialog separated and better behaved
+ - Variation uses % scale for consistency (was 1/1000ths before)
+ - Cosmetic changes
+ - Add multiscale Perlin noise step
+ - River generation faster and more reliable.
+ - Subdivision enumerated as 1...levels in progress dialog (not from zero)
+ - Improvements to river generation memory usage.
+ - Saved povray file no longer needs colors.inc
+
 From release 0.0.3:
  - Bump version number to 0.1.0
  - Support emissive oceans and rivers (including POV save)
@@ -9,6 +20,7 @@ From release 0.0.3:
  - Save uses Qt file-picker dialog
  - Slider control of ambient
  - Amount of movement independent of FPS rate.
+ - Clean up bogus files in CVS
 
 From release 0.0.1:
  - Bump version number to 0.0.3 (0.0.2 omitted docs)

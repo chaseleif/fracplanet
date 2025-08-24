@@ -25,6 +25,10 @@ void TriangleMesh::progress_start(uint steps,const std::string& info) const
 {
   if (_progress) _progress->progress_start(steps,info);
 }
+void TriangleMesh::progress_stall(const std::string& reason) const
+{
+  if (_progress) _progress->progress_stall(reason);
+}
 void TriangleMesh::progress_step(uint step) const
 {
   if (_progress) _progress->progress_step(step);
@@ -85,12 +89,22 @@ void TriangleMesh::compute_vertex_normals()
   progress_complete("Normals computed");
 }
 
-void TriangleMesh::subdivide(const XYZ& variation)
+/*! level parameter is just for progress information
+ */
+void TriangleMesh::subdivide(const XYZ& variation,uint level,uint levels)
 {
   const uint steps=vertices()+triangles();
   uint step=0;
 
-  progress_start(100,"Subdividing");
+  {
+    std::ostringstream msg;
+    msg 
+      << "Subdivision level " 
+      << 1+level  // Display 1...levels inclusive
+      << " of "
+      << levels;
+    progress_start(100,msg.str());
+  }
   
   {
     // Make a copy of our data
@@ -176,9 +190,9 @@ void TriangleMesh::subdivide(uint subdivisions,uint flat_subdivisions,const XYZ&
   for (uint s=0;s<subdivisions;s++)
     {
       if (s<flat_subdivisions)
-	subdivide(XYZ(0.0,0.0,0.0));
+	subdivide(XYZ(0.0,0.0,0.0),s,subdivisions);
       else
-	subdivide(variation/(1<<s));
+	subdivide(variation/(1<<s),s,subdivisions);
     }
 }
 
@@ -219,9 +233,8 @@ bool TriangleMesh::write_povray(const std::string& fname_base,const std::string&
   std::ofstream out_inc(filename_inc.c_str());
   
   // Boilerplate for renderer    
-  out_pov << "#include \"colors.inc\"\n";
   out_pov << "camera {perspective location <0,1,-4.5> look_at <0,0,0> angle 45}\n";
-  out_pov << "light_source {<100,100,-100> color White}\n";
+  out_pov << "light_source {<100,100,-100> color rgb <1.0,1.0,1.0>}\n";
   out_pov << "#include \""+filename_inc_relative_to_pov+"\"\n";
   
   // Use POV's mesh2 object

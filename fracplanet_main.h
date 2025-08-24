@@ -32,6 +32,7 @@ extern "C"
 #include <qhbox.h>
 #include <qvbox.h>
 #include <qlabel.h>
+#include <qprogressdialog.h>
 
 #include <iostream>
 
@@ -55,6 +56,8 @@ class FracplanetMain : public QHBox , public Progress
  private:
   Q_OBJECT
 protected:
+  QApplication*const application;
+
   //! The mesh being rendered.
   TriangleMeshTerrain* mesh;
 
@@ -73,16 +76,19 @@ protected:
   QTabWidget* tab;
 
   uint last_step;
-  QGroupBox* progress_box;
-  QLabel* progress_label;
-  QProgressBar* progress_bar;
 
+  std::auto_ptr<QProgressDialog> progress_dialog;
+  std::string progress_info;
+  bool progress_was_stalled;
+
+  bool startup;
 
  public:
-  FracplanetMain(QWidget* parent);
+  FracplanetMain(QWidget* parent,QApplication* app);
   virtual ~FracplanetMain();
 
   virtual void progress_start(uint target,const std::string&);
+  virtual void progress_stall(const std::string& reason);
   virtual void progress_step(uint step);
   virtual void progress_complete(const std::string&);
   

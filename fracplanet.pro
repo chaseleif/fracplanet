@@ -1,7 +1,7 @@
 TEMPLATE = app
 
 # append debug or release
-CONFIG+= qt opengl release
+CONFIG+= qt opengl debug # release
 
 #######################################
 # Installation 
@@ -15,9 +15,10 @@ documentation.files = fracplanet.htm fracplanet.css
 ##################
 # Improved optimisation options from qmake defaults.
 # Now leaving these ON for general distribution
+# -funroll-loops unproven 
 
 QMAKE_CXXFLAGS_RELEASE -= -O2
-QMAKE_CXXFLAGS_RELEASE += -O3 -fomit-frame-pointer -funroll-loops -ffast-math 
+QMAKE_CXXFLAGS_RELEASE += -O3 -fomit-frame-pointer -ffast-math 
 
 ##################
 # Architecture specific optimisations
@@ -51,6 +52,7 @@ HEADERS += \
            fracplanet_main.h \
            geometry.h \
            license.h \
+           noise.h \
            parameters_render.h \
            parameters_save.h \
            parameters_terrain.h \
@@ -77,6 +79,7 @@ SOURCES += \
            fracplanet_main.cpp \
            geometry.cpp \
            license.cpp \
+           noise.cpp \
            parameters_render.cpp \
            parameters_save.cpp \
            parameters_terrain.cpp \
