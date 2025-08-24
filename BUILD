@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/bin/bash
 
-./configure
-make
+PATH=$QTDIR/bin:$PATH
+export PATH
+
+./configure $@ && make

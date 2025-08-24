@@ -32,7 +32,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <qprogressbar.h>
 #include <qlineedit.h>
 #include <qspinbox.h>
-#include <qgrid.h>
 #include <qtooltip.h>
 #include <qradiobutton.h>
 #include <qhbuttongroup.h>
@@ -61,8 +60,6 @@ class ControlTerrain : public QVBox
 
   //! Requests to regenerate terrain are forwarded to the top level GUI widget.
   FracplanetMain* regenerate_target;
-
-  QGrid* grid; 
 
   QHButtonGroup* object_type_button_group;
   QRadioButton* object_type_planet_button;
@@ -104,16 +101,15 @@ class ControlTerrain : public QVBox
   QLabel* lake_becomes_sea_label;
   QSpinBox* lake_becomes_sea_spinbox;
 
+  QSpinBox* oceans_and_rivers_emissive_spinbox;
+
   QLabel* colour_label;
-  QGrid* colour_grid;
   QPushButton* colour_ocean_button;
   QPushButton* colour_shoreline_button;
   QPushButton* colour_low_button;
   QPushButton* colour_river_button;
   QPushButton* colour_snow_button;
   QPushButton* colour_high_button;
-
-  QSlider* oceans_and_rivers_emissive_slider;
 
   QPushButton* regenerate_button;
   QPushButton* regenerate_with_new_seed_button;

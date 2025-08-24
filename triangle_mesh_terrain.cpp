@@ -258,8 +258,14 @@ void TriangleMeshTerrain::do_colours(const ParametersTerrain& parameters)
 	vertex(triangle(i).vertex(1)).colour(1,parameters.colour_ocean);
 	vertex(triangle(i).vertex(2)).colour(1,parameters.colour_ocean);
 
-	// For debugging, set the colour0 of those triangles to red
+	if (parameters.oceans_and_rivers_emissive>0.0f)
+	  {
+	    vertex(triangle(i).vertex(0)).emissive(1,true);
+	    vertex(triangle(i).vertex(1)).emissive(1,true);
+	    vertex(triangle(i).vertex(2)).emissive(1,true);
+	  }
 
+	// For debugging, set the colour0 of those triangles to red
 	vertex(triangle(i).vertex(0)).colour(0,ByteRGB(255,0,0));
 	vertex(triangle(i).vertex(1)).colour(0,ByteRGB(255,0,0));
 	vertex(triangle(i).vertex(2)).colour(0,ByteRGB(255,0,0));
@@ -296,6 +302,7 @@ void TriangleMeshTerrain::do_colours(const ParametersTerrain& parameters)
 	else if (is_river)
 	  {
 	    vertex(i).colour(0,parameters.colour_river);
+	    vertex(i).emissive(0,true);
 	  }
 	else if (normalised_height<beachline)
 	  {
@@ -323,73 +330,92 @@ void TriangleMeshTerrain::do_terrain(const ParametersTerrain& parameters)
   do_rivers(parameters);
   compute_vertex_normals();
   do_colours(parameters);
+  set_emissive(parameters.oceans_and_rivers_emissive);
 }
 
 TriangleMeshTerrainPlanet::TriangleMeshTerrainPlanet(const ParametersTerrain& parameters,Progress* progress)
   :TriangleMesh(progress)
-  ,TriangleMeshSubdividedIcosahedron(1.0+parameters.variation.z*parameters.base_height,parameters.subdivisions,parameters.subdivisions_unperturbed,parameters.subdivisions_seed,parameters.variation,progress)
   ,TriangleMeshTerrain(progress)
+  ,TriangleMeshSubdividedIcosahedron(1.0+parameters.variation.z*parameters.base_height,parameters.subdivisions,parameters.subdivisions_unperturbed,parameters.subdivisions_seed,parameters.variation,progress)
 {
   do_terrain(parameters);
 }
 
-void TriangleMeshTerrainPlanet::write_povray(const ParametersSave& param,const ParametersTerrain& parameters_terrain) const
+bool TriangleMeshTerrainPlanet::write_povray(const std::string& base_filename,const ParametersSave& param,const ParametersTerrain& parameters_terrain) const
 {
   const bool save_pov_mode=POVMode::pov_mode();
   POVMode::pov_mode(true);
 
-  std::string header;
+  std::stringstream header;
   
   if (param.sea_object)
     {
-      std::ostringstream colour_ocean;
-      colour_ocean << parameters_terrain.colour_ocean;
-      header+="sphere {<0.0,0.0,0.0>,1.0 pigment{rgb "+colour_ocean.str()+"}}\n";
+      header 
+	<< "sphere {<0.0,0.0,0.0>,1.0 pigment{rgb "
+	<< parameters_terrain.colour_ocean
+	<< "} finish {ambient " 
+	<< emissive() 
+	<< " diffuse " 
+	<< 1.0f-emissive() 
+	<< "}}\n";
     }
   
   if (param.atmosphere)
     {
-      header+="sphere {<0.0,0.0,0.0>,1.025 hollow texture {pigment {color rgbf 1}} interior{media{scattering{1,color rgb <1.0,1.0,1.0> extinction 1}}}}\n";
-      header+="sphere {<0.0,0.0,0.0>,1.05  hollow texture {pigment {color rgbf 1}} interior{media{scattering{1,color rgb <0.0,0.0,1.0> extinction 1}}}}\n";
+      header
+	<< "sphere {<0.0,0.0,0.0>,1.025 hollow texture {pigment {color rgbf 1}} interior{media{scattering{1,color rgb <1.0,1.0,1.0> extinction 1}}}}\n";
+      header
+	<< "sphere {<0.0,0.0,0.0>,1.05  hollow texture {pigment {color rgbf 1}} interior{media{scattering{1,color rgb <0.0,0.0,1.0> extinction 1}}}}\n";
     }
   
-  TriangleMesh::write_povray(param.basename,header,param.sea_object);
+  bool ret=TriangleMesh::write_povray(base_filename,header.str(),param.sea_object);
 
   POVMode::pov_mode(save_pov_mode);
+
+  return ret;
 }
 
 TriangleMeshTerrainFlat::TriangleMeshTerrainFlat(const ParametersTerrain& parameters,Progress* progress)
   :TriangleMesh(progress)
-  ,TriangleMeshFlatTriangle(parameters.variation.z*parameters.base_height,parameters.subdivisions_seed,progress)
   ,TriangleMeshTerrain(progress)
+  ,TriangleMeshFlatTriangle(parameters.variation.z*parameters.base_height,parameters.subdivisions_seed,progress)
 {
   subdivide(parameters.subdivisions,parameters.subdivisions_unperturbed,parameters.variation);
 
   do_terrain(parameters);
 }
 
-void TriangleMeshTerrainFlat::write_povray(const ParametersSave& param,const ParametersTerrain& parameters_terrain) const
+bool TriangleMeshTerrainFlat::write_povray(const std::string& base_filename,const ParametersSave& param,const ParametersTerrain& parameters_terrain) const
 {
   const bool save_pov_mode=POVMode::pov_mode();
   POVMode::pov_mode(true);
 
-  std::string header;
+  std::ostringstream header;
   
   if (param.sea_object)
     {
-      std::ostringstream colour_ocean;
-      colour_ocean << parameters_terrain.colour_ocean;
-      header+="plane {<0.0,1.0,0.0>,0.0 pigment{rgb "+colour_ocean.str()+"}}\n";
+      header
+	<< "plane {<0.0,1.0,0.0>,0.0 pigment{rgb "
+	<< parameters_terrain.colour_ocean
+	<< "} finish {ambient " 
+	<< emissive() 
+	<< " diffuse " 
+	<< 1.0f-emissive() 
+	<< "}}\n";
     }
   
   if (param.atmosphere)
     {
-      header+="plane {<0.0,1.0,0.0>,0.05 hollow texture {pigment {color rgbf 1}} interior{media{scattering{1,color rgb <1.0,1.0,1.0> extinction 1}}}}\n";
-      header+="plane {<0.0,1.0,0.0>,0.1  hollow texture {pigment {color rgbf 1}} interior{media{scattering{1,color rgb <0.0,0.0,1.0> extinction 1}}}}\n";
+      header
+	<< "plane {<0.0,1.0,0.0>,0.05 hollow texture {pigment {color rgbf 1}} interior{media{scattering{1,color rgb <1.0,1.0,1.0> extinction 1}}}}\n";
+      header
+	<< "plane {<0.0,1.0,0.0>,0.1  hollow texture {pigment {color rgbf 1}} interior{media{scattering{1,color rgb <0.0,0.0,1.0> extinction 1}}}}\n";
     }
   
-  TriangleMesh::write_povray(param.basename,header,param.sea_object);
+  const bool ret=TriangleMesh::write_povray(base_filename,header.str(),param.sea_object);
 
   POVMode::pov_mode(save_pov_mode);
+
+  return ret;
 }
 

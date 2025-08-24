@@ -41,6 +41,24 @@ ControlRender::ControlRender(QWidget* parent,ParametersRender* param)
 	  this,SLOT(setDisplayList(int))
 	  );
 
+  joystick_mouse=new QCheckBox("Joystick mouse-Y (fly mode)",this);
+  joystick_mouse->setChecked(parameters->joystick_mouse);
+  QToolTip::add(joystick_mouse,"Mouse y-axis functions as joystick in fly mode:\nmouse moved down/pulled-back pitches up.");
+  connect(
+	  joystick_mouse,SIGNAL(stateChanged(int)),
+	  this,SLOT(setJoystickMouse(int))
+	  );
+
+  QGroupBox* ambient_box=new QGroupBox(3,Qt::Horizontal,"Ambient",this);
+  new QLabel("0.0",ambient_box);
+  ambient=new QSlider(0,100,10,10,Qt::Horizontal,ambient_box);
+  ambient->setTracking(true);
+  new QLabel("1.0",ambient_box);
+  connect(
+	  ambient,SIGNAL(valueChanged(int)),
+	  this,SLOT(setAmbient(int))
+	  );
+
   new QLabel("Status:",this);
   status=new QLabel("",this);
 
@@ -51,4 +69,24 @@ ControlRender::ControlRender(QWidget* parent,ParametersRender* param)
 void ControlRender::notify(const std::string& message)
 {
   status->setText(message.c_str());
+}
+
+void ControlRender::setWireframe(int v)
+{
+  parameters->wireframe=(v==2);
+}
+
+void ControlRender::setDisplayList(int v)
+{
+  parameters->display_list=(v==2);
+}
+
+void ControlRender::setJoystickMouse(int v)
+{
+  parameters->joystick_mouse=(v==2);
+}
+
+void ControlRender::setAmbient(int v)
+{
+  parameters->ambient=v/100.0f;
 }

@@ -37,6 +37,12 @@ public:
   //! Render via display list
   bool display_list;
 
+  //! Joystick mode for flight
+  bool joystick_mouse;
+
+  //! Amount of global ambient illumination (0-1)
+  float ambient;
+
   //! Target frame rate
   float fps_target;
   
@@ -47,7 +53,9 @@ public:
   ParametersRender()
     :wireframe(false)
     ,display_list(false)
-    ,fps_target(100.0)
+    ,joystick_mouse(true)
+    ,ambient(0.1f)
+    ,fps_target(75.0f)
     ,notify(0)
   {}
 

@@ -42,9 +42,11 @@ int main(int argc,char* argv[])
 
   FracplanetMain*const main_widget=new FracplanetMain(0);
 
-  main_widget->resize(800,600);
   app.setMainWidget(main_widget);
   main_widget->show();
+
+  std::cerr << "sizeof(ByteRGB) is " << sizeof(ByteRGB) << " (3 is good)\n";  
+  std::cerr << "sizeof(Vertex) is " << sizeof(Vertex) << " (32 is good)\n";
 
   std::cerr << "Commencing main loop...\n";
 

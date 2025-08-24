@@ -41,7 +41,7 @@ and <code>-fn <em>font</em></code>.
 <h3>Terrain tab</h3>
 
 <p>
-  Note that none of the parameters adjustable on this tab have any effect on the displayed model until one of the &quot;Regenerate&quot; buttons is pressed.
+  Note that none of the parameters adjustable on this tab have any effect on the displayed model until one of the &quot;Regenerate&quot; buttons is pressed.  This tab is now further subdivided into sub-tabs.
 
   <dl>
 
@@ -156,13 +156,24 @@ and <code>-fn <em>font</em></code>.
       If the lake becomes sufficiently large (greater than the percentage of available surface area specified here) then it is considered to have become an inland sea and it is no longer necessary for the lake to rise until an outflow to be discovered (in the real world, surface evaporation replaces the outflow). 
       Increasing this number may result in larger lakes, but the process of river generation can take considerably longer.
     </dd>
+
+    <dt>Oceans and rivers emissive</dt>
+    <dd>
+      Sets the emission (i.e glow) of lakes and rivers, on a scale of 0-100.
+      This is mainly to facilitate glowing lava planets.
+      Note that for terrain generated with emission non-zero, 
+      an alternative rendering path must be used which may be a little slower.
+    </dd>
   
     <dt>Change colours</dt>
     <dd>
       Click on these buttons to bring up a colour-picking dialog and change the colour for the selected class of terrain.
       Each button displays the colour currently selected for that class.
-      Obvious things you might want to do are to change the shoreline colour to the same colour as the low level terrain (I mean, those beaches are pretty absurdly <em>wide</em> otherwise), change the orange highlands to a more mountainous grey, or perhaps (like the author) you lean toward an apocalyptic &quot;lava world&quot; with red rivers and oceans, black shorelines and ash-grey terrain.
-      Unfortunately this latter case really needs the ability to select ambient shading for some terrain types (everything is diffuse currently) so that lava rivers and oceans can glow nicely on the dark side.
+      Obvious things you might want to do are to change the shoreline colour to 
+      the same colour as the low level terrain (those beaches are pretty absurdly <em>wide</em> otherwise), 
+      change the orange highlands to a more mountainous grey, or perhaps (like the author) you lean toward
+      an apocalyptic &quot;lava world&quot; with red rivers and oceans (use emission to make them glow), 
+      black shorelines and ash-grey terrain.
     </dd>
   
     <dt>Regenerate</dt>
@@ -225,7 +236,23 @@ and <code>-fn <em>font</em></code>.
 
 <p>
   Options for OpenGL rendering appear on this tab.
-  Currently the only option is a tickbox to select wireframe rendering.
+  Note that none of these make any difference to the underlying mesh or POV-Ray's rendering of saved meshes.
+  Currently the options are a tickbox to select wireframe rendering,
+  another to select display-list rendering (the default is immediate mode),
+  another to select joystick mode for the mouse in flight mode
+  (this simply affects whether pulling the mouse down the screen flys you in that
+  direction, or whether it's more like an aircraft joystick and pitches you up instead)
+  and a slider controlling the amount of ambient light.
+  The frame rate and current mesh size is also displayed.
+</p>
+
+<p>
+  Display list rendering is generally but not always faster
+  (depends on your OpenGL implementation and graphics drivers).
+  The main reason display list is not enabled by default is that
+  the application may pause for a long time while OpenGL processes the
+  list when it is first rendered; the amount of memory consumed by 
+  the display list could also be a problem for very large meshes.
 </p>
 
 <h3>About tab</h3>
@@ -238,10 +265,12 @@ and <code>-fn <em>font</em></code>.
 
 <p>
   The central area displays the current (most recently generated) model.
-  The (badly named) &quot;elevation&quot; slider controls the latitude of the camera (when viewing a sphere-based object), and the elevation (as in azimuth-elevation) of the camera when viewing a planar based terrain area.  
+  It is hidden when terrain is being regenerated.
+  The (badly named) &quot;tilt&quot; slider controls the latitude of the camera (when viewing a sphere-based object), and the elevation (as in azimuth-elevation) of the camera when viewing a planar based terrain area.  
   Note that in the latter case the bottom half of the slider places the camera below base ground level/sea level, which results in little being seen due to back-face culling.
-  The &quot;spin rate&quot; controls the rate at which the object is rotated (the increment is currently frame-by-frame and <em>not</em> compensated for actual elapsed time between frame updates).
-  The display area update rate is clamped to 100Hz, although this will typically only be reached at the lowest levels of subdivision.
+  The &quot;spin rate&quot; controls the rate at which the object is rotated.
+  The display area update rate is clamped to 75Hz, although this will typically
+  only be reached at the lowest levels of subdivision.
 </p>
 
 <h2>License</h2>
@@ -265,6 +294,5 @@ and <code>-fn <em>font</em></code>.
 <p>
   The full license can be also viewed on fracplanet's &quot;About&quot; tab.
 </p>
-
 
 </body>

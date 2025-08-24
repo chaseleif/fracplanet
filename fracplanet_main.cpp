@@ -19,6 +19,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <qapplication.h>
 #include <qcursor.h>
+#include <qfiledialog.h>
+#include <qmessagebox.h>
 
 FracplanetMain::FracplanetMain(QWidget* parent)
   :QHBox(parent)
@@ -44,11 +46,20 @@ FracplanetMain::FracplanetMain(QWidget* parent)
   progress_label=new QLabel(progress_box);
   progress_bar=new QProgressBar(progress_box);
 
-  viewer=new TriangleMeshViewer(this,&parameters_render);    
-  setStretchFactor(viewer,2);
+  viewer=new TriangleMeshViewer(0,&parameters_render);     // Viewer will be a top-level-window
+  viewer->resize(512,512);
+  viewer->move(384,64);  // Moves view away from controls on most window managers
 
-  regenerate();  
+  regenerate(); 
+
+  raise();   // On app start-up the control panel is the most important thing (regenerate raises the viewer window).
 }
+
+FracplanetMain::~FracplanetMain()
+{
+  delete viewer;
+}
+
 
 void FracplanetMain::progress_start(uint target,const std::string& info)
 {
@@ -83,6 +94,8 @@ void FracplanetMain::progress_complete(const std::string& info)
 
 void FracplanetMain::regenerate()
 {
+  viewer->hide();
+
   delete mesh;
 
   // There are some issues with type here:
@@ -106,9 +119,33 @@ void FracplanetMain::regenerate()
 	break;
       }
     }
+
+  viewer->showNormal();
+  viewer->raise();
 }
 
 void FracplanetMain::save()
 {
-  mesh->write_povray(parameters_save,parameters_terrain);
+  
+  QString selected_filename=QFileDialog::getSaveFileName(".","POV-Ray (*.pov *.inc)",this,"Save object","Fracplanet: a .pov AND .inc file will be written");
+  if (selected_filename.isEmpty())
+    {
+      QMessageBox::critical(this,"Fracplanet","No file specified\nNothing saved");
+    }
+  else
+    {
+      if (selected_filename.upper().endsWith(".POV") || selected_filename.upper().endsWith(".INC"))
+	{
+	  const std::string base_filename(selected_filename.left(selected_filename.length()-4).local8Bit());
+	  const bool ok=mesh->write_povray(base_filename,parameters_save,parameters_terrain);
+	  if (!ok) 
+	    {
+	      QMessageBox::critical(this,"Fracplanet","Errors ocurred while the files were being written.");
+	    }
+	}
+      else
+	{
+	  QMessageBox::critical(this,"Fracplanet","File selected must have .pov or .inc suffix.");
+	}
+    }
 }

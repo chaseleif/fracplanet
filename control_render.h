@@ -52,6 +52,8 @@ class ControlRender : public QVBox, public Notifiable
 
   QCheckBox* wireframe;
   QCheckBox* display_list;
+  QCheckBox* joystick_mouse;
+  QSlider* ambient;
 
   QLabel* status;
 
@@ -63,15 +65,10 @@ class ControlRender : public QVBox, public Notifiable
   
   public slots:
     
-  void setWireframe(int v)
-    {
-      parameters->wireframe=(v==2);
-    }
-  
-  void setDisplayList(int v)
-    {
-      parameters->display_list=(v==2);
-    }
+  void setWireframe(int v);
+  void setDisplayList(int v);
+  void setJoystickMouse(int v);
+  void setAmbient(int v);
 };
 
 #endif
