@@ -17,30 +17,9 @@
 /*  along with Fracplanet.  If not, see <http://www.gnu.org/licenses/>.   */
 /**************************************************************************/
 
-/**************************************************************************/
-/*  Copyright 2009 Tim Day                                                */
-/*                                                                        */
-/*  This file is part of Fracplanet                                       */
-/*                                                                        */
-/*  Evolvotron is free software: you can redistribute it and/or modify    */
-/*  it under the terms of the GNU General Public License as published by  */
-/*  the Free Software Foundation, either version 3 of the License, or     */
-/*  (at your option) any later version.                                   */
-/*                                                                        */
-/*  Evolvotron is distributed in the hope that it will be useful,         */
-/*  but WITHOUT ANY WARRANTY; without even the implied warranty of        */
-/*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         */
-/*  GNU General Public License for more details.                          */
-/*                                                                        */
-/*  You should have received a copy of the GNU General Public License     */
-/*  along with Evolvotron.  If not, see <http://www.gnu.org/licenses/>.   */
-/**************************************************************************/
-
 /*! \file
   \brief Implementation for templated Image class.
 */
-
-#include "precompiled.h"
 
 #include "image.h"
 
@@ -85,7 +64,7 @@ template <> bool Raster<uchar>::write_pgmfile(const std::string& filename,Progre
       out.write(reinterpret_cast<const char*>(&(*(row->begin()))),row->size());
     }
   out.close();
-  return out;
+  return static_cast<bool>(out);
 }
 
 template <> bool Raster<ushort>::write_pgmfile(const std::string& filename,Progress* target) const
@@ -101,7 +80,7 @@ template <> bool Raster<ushort>::write_pgmfile(const std::string& filename,Progr
       progress.step();
       for (const ushort* it=row->begin();it!=row->end();++it)
 	{
-	  const uchar p[2]={((*it)>>8),(*it)};
+	  const uchar p[2]={uchar((*it)>>8),uchar(*it)};
 	  if (m>=256)
 	    {
 	      // PGM spec is most significant byte first
@@ -115,7 +94,7 @@ template <> bool Raster<ushort>::write_pgmfile(const std::string& filename,Progr
 	}
     }
   out.close();
-  return out;
+  return static_cast<bool>(out);
 }
 
 template <> bool Raster<ByteRGBA>::write_ppmfile(const std::string& filename,Progress* target) const
@@ -132,7 +111,7 @@ template <> bool Raster<ByteRGBA>::write_ppmfile(const std::string& filename,Pro
 	out.write(reinterpret_cast<const char*>(&((*it).r)),3);
     }
   out.close();
-  return out;
+  return static_cast<bool>(out);
 }
 
 

@@ -24,8 +24,10 @@
 #ifndef _control_render_h_
 #define _control_render_h_
 
+#include "common.h"
 #include "control.h"
 #include "parameters_render.h"
+#include "qtcommon.h"
 
 //! Encapsulates GUI elements for controlling OpenGL rendering.
 class ControlRender : public Control

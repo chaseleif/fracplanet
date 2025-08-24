@@ -17,12 +17,12 @@
 /*  along with Fracplanet.  If not, see <http://www.gnu.org/licenses/>.   */
 /**************************************************************************/
 
-#include "precompiled.h"
-
 #include "triangle_mesh_viewer_display.h"
 
 #include "matrix33.h"
 #include "triangle_mesh_viewer.h"
+
+#include <GL/glu.h>
 
 TriangleMeshViewerDisplay::TriangleMeshViewerDisplay(TriangleMeshViewer* parent,const QGLFormat& format,const ParametersRender* param,const std::vector<const TriangleMesh*>& m,bool verbose)
   :QGLWidget(format,parent)
@@ -136,7 +136,7 @@ void TriangleMeshViewerDisplay::paintGL()
   GLfloat global_ambient[]={a,a,a,1.0};
   glLightModelfv(GL_LIGHT_MODEL_AMBIENT,global_ambient);
 
-  GLfloat light_diffuse[]={1.0-a,1.0-a,1.0-a,1.0};
+  GLfloat light_diffuse[]={1.0f-a,1.0f-a,1.0f-a,1.0};
   glLightfv(GL_LIGHT0,GL_DIFFUSE,light_diffuse);
 
   glMatrixMode(GL_MODELVIEW);

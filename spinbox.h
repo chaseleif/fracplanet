@@ -19,6 +19,13 @@
 
 /*! QSpinBox ctor helper
  */
+
+#ifndef _spinbox_h_
+#define _spinbox_h_
+
+#include "common.h"
+#include "qtcommon.h"
+
 class SpinBox : public QSpinBox
 {
  public:
@@ -27,3 +34,5 @@ class SpinBox : public QSpinBox
 
   ~SpinBox();
 };
+
+#endif

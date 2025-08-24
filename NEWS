@@ -1,3 +1,20 @@
+Release 0.5.1:
+ - Tweaks for Debian/buster.
+ - Rename BUILD to BUILD.sh; ditch configure; move built-in USAGE processing to USAGE-update.sh and put usage_text.h under version control.
+ - Some tweaks to code; split Qt includes from common.h to qtcommon.h
+
+Release 0.5.0:
+ - Verified works with Qt 5.9.1 ("official" Qt release) and g++ 6.3.0 (Debian Stretch version)
+ - Ditch use of precompiled headers; compilers are awesome these days.
+ - Increase initial subdivision level to 8.
+
+From release 0.4.0:
+ - Bump version to 0.4.1
+ - Fix linkage for Ubuntu Karmic.  Seems to work on Lenny too.
+ - SourceForge platform upgrade.  Used:
+     svn switch --relocate https://fracplanet.svn.sourceforge.net/svnroot/fracplanet "svn+ssh://timday@svn.code.sf.net/p/fracplanet/code"
+ - Save-for-blender updated (courtesy of Lawrence D'Oliveiro https://github.com/ldo ) ; works with Debian/Wheezy's blender 2.63
+
 From release 0.3.3:
  - Bump version number to 0.4.0 (0.4.0dev while under development)
  - Migrate sourceforge repository to svn

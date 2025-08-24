@@ -23,8 +23,10 @@
 #ifndef _control_save_h_
 #define _control_save_h_
 
+#include "common.h"
 #include "control.h"
 #include "parameters_save.h"
+#include "qtcommon.h"
 
 class FracplanetMain;
 

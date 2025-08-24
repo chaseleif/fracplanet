@@ -17,8 +17,6 @@
 /*  along with Fracplanet.  If not, see <http://www.gnu.org/licenses/>.   */
 /**************************************************************************/
 
-#include "precompiled.h"
-
 #include "xyz.h"
 
 /*! Table so we can look up by element number.
@@ -40,7 +38,7 @@ const std::string XYZ::format_comma() const
 const std::string XYZ::format_blender() const
 {
   std::ostringstream s;
-  s << x << "," << y << "," << z;
+  s << x << ", " << y << ", " << z;
   return s.str();
 }
 

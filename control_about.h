@@ -24,7 +24,9 @@
 #ifndef _control_about_h_
 #define _control_about_h_
 
+#include "common.h"
 #include "control.h"
+#include "qtcommon.h"
 
 //! Displays "About" type info
 class ControlAbout : public Control

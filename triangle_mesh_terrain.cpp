@@ -17,9 +17,9 @@
 /*  along with Fracplanet.  If not, see <http://www.gnu.org/licenses/>.   */
 /**************************************************************************/
 
-#include "precompiled.h"
-
 #include "triangle_mesh_terrain.h"
+
+#include <map>
 
 #include "noise.h"
 
