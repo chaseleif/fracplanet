@@ -35,7 +35,7 @@
 #include <vector>
 
 #include <boost/array.hpp>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/function.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>

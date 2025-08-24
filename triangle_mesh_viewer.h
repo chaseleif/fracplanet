@@ -75,7 +75,7 @@ class TriangleMeshViewer : public QWidget
   TriangleMeshViewerDisplay* display;
 
   //! Real time for computing how much to advance animation
-  boost::scoped_ptr<QTime> clock;
+  QElapsedTimer clock;
 
   //! Record time last tick
   int last_t;

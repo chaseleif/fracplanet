@@ -50,14 +50,6 @@ template <typename T> class RGBA
   RGBA()
     {}
 
-  //! Copy constructor.
-  RGBA(const RGBA& c)
-    :r(c.r)
-    ,g(c.g)
-    ,b(c.b)
-    ,a(c.a)
-    {}
-
   //! Initialise from separate components.
   RGBA(T vr,T vg,T vb,T va)
     :r(vr)

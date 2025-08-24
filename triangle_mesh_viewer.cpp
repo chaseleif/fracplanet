@@ -118,8 +118,7 @@ TriangleMeshViewer::TriangleMeshViewer(QWidget* parent,const ParametersRender* p
 	  this,SLOT(reset())
 	  );
 
-  clock.reset(new QTime());
-  clock->start();
+  clock.start();
   last_t=0;
 
   QTimer*const timer=new QTimer(this);  
@@ -178,7 +177,7 @@ void TriangleMeshViewer::mousePressEvent(QMouseEvent* e)
     {
       if (e->button()==Qt::LeftButton) keypressed_mouse_left=true;
       else if (e->button()==Qt::RightButton) keypressed_mouse_right=true;
-      else if (e->button()==Qt::MidButton) camera_velocity=0.0f;
+      else if (e->button()==Qt::MiddleButton) camera_velocity=0.0f;
       else e->ignore();
     }
   else
@@ -205,7 +204,7 @@ void TriangleMeshViewer::wheelEvent(QWheelEvent* e)
 {
   if (fly_mode)
     {
-      camera_velocity+=e->delta()*(0.03125f/480.0f);
+      camera_velocity+=e->angleDelta().y()*(0.03125f/480.0f);
     }
   else
     {
@@ -275,7 +274,7 @@ void TriangleMeshViewer::reset()
 
 void TriangleMeshViewer::tick()
 {
-  const int t=clock->elapsed();
+  const int t=clock.elapsed();
   const float dt=0.001f*(t-last_t);
   last_t=t;
 

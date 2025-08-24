@@ -46,10 +46,6 @@ class XYZ
   XYZ()
     {}
 
-  //! Copy constructor.
-  XYZ(const XYZ& v)
-    :x(v.x),y(v.y),z(v.z){}
-
   //! Initialise from separate components.
   XYZ(float vx,float vy,float vz)
     :x(vx),y(vy),z(vz){}

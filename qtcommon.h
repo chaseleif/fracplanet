@@ -47,8 +47,8 @@
 #include <QTabWidget>
 #include <QTextBrowser>
 #include <QTextEdit>
-#include <QTime>
 #include <QTimer>
+#include <QElapsedTimer>
 #include <QToolTip>
 #include <QVBoxLayout>
 #include <QWidget>

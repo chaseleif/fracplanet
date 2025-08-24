@@ -107,10 +107,10 @@ class TriangleMeshViewerDisplay : public QGLWidget
   uint height;
 
   //! Time frames for FPS measurement.
-  QTime frame_time;
+  QElapsedTimer frame_time;
   
   //! Time since FPS last reported.
-  QTime frame_time_reported;
+  QElapsedTimer frame_time_reported;
 
   //! Queue of frame times to average.
   std::deque<uint> frame_times;
