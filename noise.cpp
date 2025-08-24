@@ -1,24 +1,27 @@
-// Source file for fracplanet
-// Copyright (C) 2006 Tim Day
-/*
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-*/
+/**************************************************************************/
+/*  Copyright 2009 Tim Day                                                */
+/*                                                                        */
+/*  This file is part of Fracplanet                                       */
+/*                                                                        */
+/*  Fracplanet is free software: you can redistribute it and/or modify    */
+/*  it under the terms of the GNU General Public License as published by  */
+/*  the Free Software Foundation, either version 3 of the License, or     */
+/*  (at your option) any later version.                                   */
+/*                                                                        */
+/*  Fracplanet is distributed in the hope that it will be useful,         */
+/*  but WITHOUT ANY WARRANTY; without even the implied warranty of        */
+/*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         */
+/*  GNU General Public License for more details.                          */
+/*                                                                        */
+/*  You should have received a copy of the GNU General Public License     */
+/*  along with Fracplanet.  If not, see <http://www.gnu.org/licenses/>.   */
+/**************************************************************************/
 
 /*! \file
   \brief Implementation of Noise class
 */
+
+#include "precompiled.h"
 
 #include "noise.h"
 
@@ -57,22 +60,25 @@ Noise::Noise(uint seed)
     }
 }
 
-inline const float value(const XYZ& q,float rx,float ry,float rz)
+Noise::~Noise()
+{}
+
+inline float value(const XYZ& q,float rx,float ry,float rz)
 {
   return rx*q.x+ry*q.y+rz*q.z;
 }
 
-inline const float surve(float t)
+inline float surve(float t)
 {
   return t*t*(3.0-2.0*t);
 }
 
-inline const float lerp(float t,float a,float b)
+inline float lerp(float t,float a,float b)
 {
   return a+t*(b-a);
 }
 
-const float Noise::operator()(const XYZ& p) const
+float Noise::operator()(const XYZ& p) const
 {
   // Crank up the frequency a bit otherwise don't see much variation in base case
   const float tx=2.0*p.x+10000.0f;
@@ -147,7 +153,7 @@ MultiscaleNoise::~MultiscaleNoise()
 {}
 
 //! Return noise value at a point.
-const float MultiscaleNoise::operator()(const XYZ& p) const
+float MultiscaleNoise::operator()(const XYZ& p) const
 {
   float v=0.0;
   for (uint i=0;i<_terms;i++)

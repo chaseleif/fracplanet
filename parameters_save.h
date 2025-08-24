@@ -1,20 +1,21 @@
-// Source file for fracplanet
-// Copyright (C) 2006 Tim Day
-/*
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-*/
+/**************************************************************************/
+/*  Copyright 2009 Tim Day                                                */
+/*                                                                        */
+/*  This file is part of Fracplanet                                       */
+/*                                                                        */
+/*  Fracplanet is free software: you can redistribute it and/or modify    */
+/*  it under the terms of the GNU General Public License as published by  */
+/*  the Free Software Foundation, either version 3 of the License, or     */
+/*  (at your option) any later version.                                   */
+/*                                                                        */
+/*  Fracplanet is distributed in the hope that it will be useful,         */
+/*  but WITHOUT ANY WARRANTY; without even the implied warranty of        */
+/*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         */
+/*  GNU General Public License for more details.                          */
+/*                                                                        */
+/*  You should have received a copy of the GNU General Public License     */
+/*  along with Fracplanet.  If not, see <http://www.gnu.org/licenses/>.   */
+/**************************************************************************/
 
 /*! \file
   \brief Interface for class ParametersSave.
@@ -23,14 +24,19 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _parameters_save_h_
 #define _parameters_save_h_
 
-#include "useful.h"
-
 class ParametersRender;
 
 //! Aggregates controllable parameters for all things related to save.
 class ParametersSave
 {
  public:
+
+  //! Constructor.
+  ParametersSave(const ParametersRender*);
+
+  //! Destructor.
+  ~ParametersSave();
+
   //! Whether to emit an atmosphere object to POV file.
   bool pov_atmosphere;
 
@@ -48,12 +54,6 @@ class ParametersSave
 
   //! Save for blender needs access to some of these.
   const ParametersRender*const parameters_render;
-
-  //! Constructor.
-  ParametersSave(const ParametersRender*);
-
-  //! Destructor.
-  ~ParametersSave();
 };
 
 #endif

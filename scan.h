@@ -1,20 +1,21 @@
-// Source file for fracplanet
-// Copyright (C) 2006 Tim Day
-/*
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-*/
+/**************************************************************************/
+/*  Copyright 2009 Tim Day                                                */
+/*                                                                        */
+/*  This file is part of Fracplanet                                       */
+/*                                                                        */
+/*  Fracplanet is free software: you can redistribute it and/or modify    */
+/*  it under the terms of the GNU General Public License as published by  */
+/*  the Free Software Foundation, either version 3 of the License, or     */
+/*  (at your option) any later version.                                   */
+/*                                                                        */
+/*  Fracplanet is distributed in the hope that it will be useful,         */
+/*  but WITHOUT ANY WARRANTY; without even the implied warranty of        */
+/*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         */
+/*  GNU General Public License for more details.                          */
+/*                                                                        */
+/*  You should have received a copy of the GNU General Public License     */
+/*  along with Fracplanet.  If not, see <http://www.gnu.org/licenses/>.   */
+/**************************************************************************/
 
 /*! \file
   \brief Interface for classes for scan conversion.
@@ -23,9 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _scan_h_
 #define _scan_h_
 
-#include <boost/array.hpp>
-
-#include "useful.h"
 #include "xyz.h"
 
 //! Encapsulates information needed for scan conversion.
@@ -35,14 +33,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 class ScanEdge
 {
  public:
+
   ScanEdge()
     {}
+
   ScanEdge(float vx,uint v0,uint v1,float l)
     :x(vx)
     ,vertex0(v0)
     ,vertex1(v1)
     ,lambda(l)
     {}
+
   float x;
   uint vertex0;
   uint vertex1;
@@ -54,8 +55,10 @@ class ScanConvertBackend;
 class ScanConverter
 {
  public:
+
   ScanConverter()
     {}
+
   virtual ~ScanConverter()
     {}
 
@@ -73,26 +76,35 @@ class ScanConverter
 class ScanConvertBackend
 {
  public:
+
   ScanConvertBackend(int w,int h)
     :_width(w)
     ,_height(h)
     {}
+
   virtual ~ScanConvertBackend()
     {}
+
   int width() const
     {
       return _width;
     }
+
   int height() const
     {
       return _height;
     }
+
   virtual void scan_convert_backend(uint y,const ScanEdge& edge0,const ScanEdge& edge1) const
     =0;
+
   virtual void subdivide(const boost::array<XYZ,3>&,const XYZ&,const ScanConverter&) const
     =0;
+
  private:
+
   const int _width;
+
   const int _height;
 };
 

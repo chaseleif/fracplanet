@@ -1,20 +1,21 @@
-// Source file for fracplanet
-// Copyright (C) 2006 Tim Day
-/*
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-*/
+/**************************************************************************/
+/*  Copyright 2009 Tim Day                                                */
+/*                                                                        */
+/*  This file is part of Fracplanet                                       */
+/*                                                                        */
+/*  Fracplanet is free software: you can redistribute it and/or modify    */
+/*  it under the terms of the GNU General Public License as published by  */
+/*  the Free Software Foundation, either version 3 of the License, or     */
+/*  (at your option) any later version.                                   */
+/*                                                                        */
+/*  Fracplanet is distributed in the hope that it will be useful,         */
+/*  but WITHOUT ANY WARRANTY; without even the implied warranty of        */
+/*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         */
+/*  GNU General Public License for more details.                          */
+/*                                                                        */
+/*  You should have received a copy of the GNU General Public License     */
+/*  along with Fracplanet.  If not, see <http://www.gnu.org/licenses/>.   */
+/**************************************************************************/
 
 /*! \file
   \brief Interface for class ParametersRender.
@@ -23,12 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _parameters_render_h_
 #define _parameters_render_h_
 
-#include <boost/program_options/variables_map.hpp>
-#include <boost/program_options/options_description.hpp>
-
-#include "useful.h"
-
-#include "notifiable.h"
 #include "rgb.h"
 
 class XYZ;
@@ -37,6 +32,13 @@ class XYZ;
 class ParametersRender
 {
 public:
+
+  //! Constructor.
+  ParametersRender(const boost::program_options::variables_map& opts);
+
+  //! Destructor.
+  ~ParametersRender();
+
   //! Flag selecting OpenGL wireframe rendering.
   bool wireframe;
 
@@ -64,15 +66,6 @@ public:
   //! Target frame rate
   float fps_target;
   
-  //! Place to send status reports
-  Notifiable* notify;
-
-  //! Constructor.
-  ParametersRender(const boost::program_options::variables_map& opts);
-
-  //! Destructor.
-  ~ParametersRender();
-
   //! Illumination direction computed from azimuth and elevation angles
   const XYZ illumination_direction() const;
 

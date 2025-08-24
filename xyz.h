@@ -1,20 +1,21 @@
-// Source file for fracplanet
-// Copyright (C) 2006 Tim Day
-/*
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-*/
+/**************************************************************************/
+/*  Copyright 2009 Tim Day                                                */
+/*                                                                        */
+/*  This file is part of Fracplanet                                       */
+/*                                                                        */
+/*  Fracplanet is free software: you can redistribute it and/or modify    */
+/*  it under the terms of the GNU General Public License as published by  */
+/*  the Free Software Foundation, either version 3 of the License, or     */
+/*  (at your option) any later version.                                   */
+/*                                                                        */
+/*  Fracplanet is distributed in the hope that it will be useful,         */
+/*  but WITHOUT ANY WARRANTY; without even the implied warranty of        */
+/*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         */
+/*  GNU General Public License for more details.                          */
+/*                                                                        */
+/*  You should have received a copy of the GNU General Public License     */
+/*  along with Fracplanet.  If not, see <http://www.gnu.org/licenses/>.   */
+/**************************************************************************/
 
 /*! \file
   \brief Interface for class XYZ.
@@ -23,7 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _xyz_h_
 #define _xyz_h_
 
-#include "useful.h"
 #include "random.h"
 
 //! Class to hold vectors in 3D cartesian co-ordinates.
@@ -122,13 +122,13 @@ class XYZ
     }
 
   //! Return the square of the magnitude.
-  const float magnitude2() const
+  float magnitude2() const
     {
       return x*x+y*y+z*z;
     }
 
   //! Return the magnitude.
-  const float magnitude() const
+  float magnitude() const
     {
       return sqrt(magnitude2());
     }
@@ -165,7 +165,7 @@ inline const XYZ operator*(const XYZ& a,const XYZ& b)
 //! Dot product.
 /*! Perhaps a curious choice of operator but it works for me.
  */
-inline const float operator%(const XYZ& a,const XYZ& b)
+inline float operator%(const XYZ& a,const XYZ& b)
 {
   return a.x*b.x+a.y*b.y+a.z*b.z;
 } 
@@ -201,13 +201,13 @@ inline const XYZ operator/(const XYZ& v,float k)
 }
 
 //! Equality operator.
-inline const bool operator==(const XYZ& a,const XYZ& b)
+inline bool operator==(const XYZ& a,const XYZ& b)
 {
   return (a.x==b.x && a.y==b.y && a.z==b.z);
 }
 
 //! Inequality operator.
-inline const bool operator!=(const XYZ& a,const XYZ& b)
+inline bool operator!=(const XYZ& a,const XYZ& b)
 {
   return (a.x!=b.x || a.y!=b.y || a.z!=b.z);
 }
@@ -270,8 +270,3 @@ class RandomXYZSphereNormal : public XYZ
 };
 
 #endif
-
-
-
-
-

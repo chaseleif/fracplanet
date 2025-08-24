@@ -19,16 +19,37 @@
 
 #include "precompiled.h"
 
-#include "parameters_save.h"
+#include "common.h"
 
-ParametersSave::ParametersSave(const ParametersRender* pr)
-  :pov_atmosphere(false)
-  ,pov_sea_object(true)
-  ,blender_per_vertex_alpha(false)
-  ,texture_shaded(false)
-  ,texture_height(1024)
-  ,parameters_render(pr)
-{}
+void fatal_error(const char* msg)
+{
+  std::cerr
+    << "\n*** Fatal error: "
+    << msg
+    << " ***\n";
+  exit(1);
+}
 
-ParametersSave::~ParametersSave()
-{}
+void fatal_internal_error(const char* src_file,uint src_line)
+{
+  std::cerr 
+    << "\n*** Fatal internal error in "
+    << src_file
+    << " at line "
+    << src_line
+    << " ***\n";
+  exit(1);
+}
+
+void constraint_violation(const char* test,const char* src_file,uint src_line)
+{
+  std::cerr 
+    << "\n*** Constraint \""
+    << test
+    << "\" violated in file"
+    << src_file
+    << " at line "
+    << src_line
+    << " ***\n";
+  exit(1);
+}

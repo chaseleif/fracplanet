@@ -1,20 +1,21 @@
-// Source file for fracplanet
-// Copyright (C) 2006 Tim Day
-/*
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-*/
+/**************************************************************************/
+/*  Copyright 2009 Tim Day                                                */
+/*                                                                        */
+/*  This file is part of Fracplanet                                       */
+/*                                                                        */
+/*  Fracplanet is free software: you can redistribute it and/or modify    */
+/*  it under the terms of the GNU General Public License as published by  */
+/*  the Free Software Foundation, either version 3 of the License, or     */
+/*  (at your option) any later version.                                   */
+/*                                                                        */
+/*  Fracplanet is distributed in the hope that it will be useful,         */
+/*  but WITHOUT ANY WARRANTY; without even the implied warranty of        */
+/*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         */
+/*  GNU General Public License for more details.                          */
+/*                                                                        */
+/*  You should have received a copy of the GNU General Public License     */
+/*  along with Fracplanet.  If not, see <http://www.gnu.org/licenses/>.   */
+/**************************************************************************/
 
 /*! \file
   \brief Interface for class TriangleMeshViewerDisplay.
@@ -23,32 +24,61 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _triangle_mesh_viewer_display_h_
 #define _triangle_mesh_viewer_display_h_
 
-#define GL_GLEXT_PROTOTYPES
-#include <GL/gl.h>
-#include <GL/glext.h>
-
-#include <qwidget.h>
-#include <qgl.h>
-#include <qdatetime.h>
-
-#include <deque>
-#include <vector>
-
-#include "useful.h"
-#include "random.h"
-
-#include "triangle_mesh.h"
 #include "parameters_render.h"
+#include "random.h"
+#include "triangle_mesh.h"
+
+class TriangleMeshViewer;
 
 //! Contains the actual rendering functionality of a TriangleMeshViewer.
 class TriangleMeshViewerDisplay : public QGLWidget
 {
  private:
+
   Q_OBJECT;
 
-  void check_for_gl_errors(const char*) const;
-  
+ public:
+
+  //! Constructor.
+  TriangleMeshViewerDisplay(TriangleMeshViewer* parent,const QGLFormat& format,const ParametersRender* param,const std::vector<const TriangleMesh*>& m,bool verbose
+);
+
+  //! Destructor
+  ~TriangleMeshViewerDisplay();
+
+  //! Specify a minimum size
+  QSize minimumSizeHint() const;
+
+  //! Guideline size
+  QSize sizeHint() const;
+
+  //! Set the mesh being rendered.
+  void set_mesh(const std::vector<const TriangleMesh*>& m);
+
  protected:
+
+  //! Called to repaint GL area.
+  void paintGL();
+
+  //! Set up OpenGL.
+  void initializeGL();
+
+  //! Deal with resize.
+  void resizeGL(int w,int h);
+  
+ public slots:
+  
+  //! Called to redisplay scene
+  void draw_frame(const XYZ& p,const XYZ& l,const XYZ& u,float r,float t);
+
+ private:
+
+  //! Need to know this to update framerate text
+  TriangleMeshViewer& _notify;
+
+  //! Control logging
+  const bool _verbose;
+
   //! The meshes being displayed.
   /*! NB NOT owned here
    */
@@ -58,7 +88,10 @@ class TriangleMeshViewerDisplay : public QGLWidget
   const ParametersRender* parameters;
 
   //! GL display list index
+  /*! Zero is not a valid value according to red book, so use zero to designate unset */
   uint gl_display_list_index;
+
+  
 
   //! Frame count.
   uint frame_number;
@@ -91,29 +124,10 @@ class TriangleMeshViewerDisplay : public QGLWidget
   float object_rotation;
   //@}
 
+  void check_for_gl_errors(const char*) const;
+  
   //! Compute background colour from render parameters and camera height
   const FloatRGBA background_colour() const;
-
- public:
-  //! Constructor.
-  TriangleMeshViewerDisplay(QWidget* parent,const ParametersRender* param,const std::vector<const TriangleMesh*>& m);
-
-  //! Set the mesh being rendered.
-  void set_mesh(const std::vector<const TriangleMesh*>& m);
-
-  //! Called to repaint GL area.
-  virtual void paintGL();
-
-  //! Set up OpenGL.
-  virtual void initializeGL();
-
-  //! Deal with resize.
-  virtual void resizeGL(int w,int h);
-  
-  public slots:
-  
-  //! Called to redisplay scene
-  void draw_frame(const XYZ& p,const XYZ& l,const XYZ& u,float r,float t);
 };
 
 #endif

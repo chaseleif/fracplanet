@@ -1,24 +1,26 @@
-#!/bin/bash -e
+#!/bin/bash
 
 # Execute this to package up fracplanet as a .tar.gz.
 # This is the script used to build the tarballs released on sourceforge
 
 VERSION=`./VERSION`
 
+DIR=${PWD##*/}
+
 cd ..
 
-PRUNEDIRS='-name moc -prune -o -name obj -prune -o -name pkg_* -prune'
+PRUNE='-name moc -prune -o -name obj -prune -o -name pkg_* -prune -o -name usage_text.h -prune'
 
-FILES_MISC=`ls fracplanet/{README,BUILD,LICENSE,TODO,CHANGES,BUGS,VERSION,THANKS,configure,doxygen.cfg,mktgz,testtgz,mkdeb,fracplanet.css,fracplanet.htm,htm_to_qml.xsl}`
-FILES_PRO=`find fracplanet ${PRUNEDIRS} -o -name '*.pro' -print`
-FILES_MAN=`find fracplanet/man -name '*.1' -print`
-FILES_H=`find fracplanet ${PRUNEDIRS} -o -name usage_text.h -prune -o -name '*.h' -print`
-FILES_C=`find fracplanet ${PRUNEDIRS} -o -name usage_text.h -prune -o -name '*.c' -print`
-FILES_CPP=`find fracplanet ${PRUNEDIRS} -o -name '*.cpp' -print`
+FILES_MISC=`ls ${DIR}/{README,BUILD,LICENSE,TODO,NEWS,BUGS,VERSION,THANKS,configure,doxygen.cfg,mktgz,testtgz,mkdeb,fracplanet.css,fracplanet.htm,htm_to_qml.xsl}`
+FILES_PRO=`find ${DIR} ${PRUNE} -o -name '*.pro' -print`
+FILES_MAN=`find ${DIR}/man ${PRUNE} -o -name '*.1'   -print`
+FILES_H=`find ${DIR} ${PRUNE} -o -name '*.h'   -print`
+FILES_C=`find ${DIR} ${PRUNE} -o -name '*.c'   -print`
+FILES_CPP=`find ${DIR} ${PRUNE} -o -name '*.cpp' -print`
 
 FILES="$FILES_MISC $FILES_PRO $FILES_MAN $FILES_H $FILES_C $FILES_CPP"
 
-tar cvfz fracplanet/fracplanet.tar.gz $FILES
+tar --transform "s:^${DIR}/:fracplanet/:" -cz -f ${DIR}/fracplanet.tar.gz $FILES
 
 echo "***"
 echo "*** Suggestion:"

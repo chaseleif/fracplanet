@@ -17,18 +17,9 @@
 /*  along with Fracplanet.  If not, see <http://www.gnu.org/licenses/>.   */
 /**************************************************************************/
 
-#include "precompiled.h"
+#ifndef _precompiled_h_
+#define _precompiled_h_
 
-#include "parameters_save.h"
+#include "common.h"
 
-ParametersSave::ParametersSave(const ParametersRender* pr)
-  :pov_atmosphere(false)
-  ,pov_sea_object(true)
-  ,blender_per_vertex_alpha(false)
-  ,texture_shaded(false)
-  ,texture_height(1024)
-  ,parameters_render(pr)
-{}
-
-ParametersSave::~ParametersSave()
-{}
+#endif

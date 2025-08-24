@@ -1,20 +1,21 @@
-// Source file for fracplanet
-// Copyright (C) 2006 Tim Day
-/*
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-*/
+/**************************************************************************/
+/*  Copyright 2009 Tim Day                                                */
+/*                                                                        */
+/*  This file is part of Fracplanet                                       */
+/*                                                                        */
+/*  Fracplanet is free software: you can redistribute it and/or modify    */
+/*  it under the terms of the GNU General Public License as published by  */
+/*  the Free Software Foundation, either version 3 of the License, or     */
+/*  (at your option) any later version.                                   */
+/*                                                                        */
+/*  Fracplanet is distributed in the hope that it will be useful,         */
+/*  but WITHOUT ANY WARRANTY; without even the implied warranty of        */
+/*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         */
+/*  GNU General Public License for more details.                          */
+/*                                                                        */
+/*  You should have received a copy of the GNU General Public License     */
+/*  along with Fracplanet.  If not, see <http://www.gnu.org/licenses/>.   */
+/**************************************************************************/
 
 /*! \file
   \brief Interface for class TriangleMeshViewer.
@@ -23,70 +24,80 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _triangle_mesh_viewer_h_
 #define _triangle_mesh_viewer_h_
 
-#include <qwidget.h>
-#include <qvbox.h>
-#include <qhbox.h>
-#include <qslider.h>
-#include <qgroupbox.h>
-#include <qgrid.h>
-#include <qpushbutton.h>
-#include <qdatetime.h>
-#include <qtimer.h>
-#include <qlabel.h>
-
-#include <vector>
-#include <boost/scoped_ptr.hpp>
-
-#include "useful.h"
-#include "random.h"
-
-#include "triangle_mesh.h"
 #include "parameters_render.h"
-
+#include "random.h"
+#include "triangle_mesh.h"
 #include "triangle_mesh_viewer_display.h"
 
 //! A class to display a triangle mesh.
 /*! Wraps a TriangleMeshViewerDisplay with some controls.
   \todo Add better controls.
 */
-class TriangleMeshViewer : public QGrid
+class TriangleMeshViewer : public QWidget
 {
  private:
+
   Q_OBJECT;
 
- protected:
+ public:
+
+  //! Constructor.
+  TriangleMeshViewer(QWidget* parent,const ParametersRender* param,const std::vector<const TriangleMesh*>& m,bool verbose);
+
+  //! Destructor
+  ~TriangleMeshViewer();
+
+  //! Used to set message in statusbar
+  void notify(const std::string&);
+
+  //! Sets the TriangleMesh to be displayed.
+  void set_mesh(const std::vector<const TriangleMesh*>& m);
+
+ public slots:
+
+  void fly();
+  void unfly();
+  
+  void set_tilt(int v);
+  void set_spinrate(int v);
+
+ private:
+
+  //! Control logging
+  const bool _verbose;
+
   //! Pointer to the rendering parameters.
   const ParametersRender* parameters;
 
   //! The actual rendering area.
   TriangleMeshViewerDisplay* display;
 
-  //! Timer for driving animation.
-  QTimer* timer;
-
-  //! Time for animation progress
+  //! Real time for computing how much to advance animation
   boost::scoped_ptr<QTime> clock;
+
+  //! Record time last tick
+  int last_t;
 
   //! Label and box around the elevation slider.
   QGroupBox* tilt_box;
-  
-  //! Elevation slider.
+
+  //! Slider controlling tilt
   QSlider* tilt_slider;
-
-  //! Button to start flying.
-  QPushButton* fly_button;
-
-  //! Button to restore default orientation.
-  QPushButton* reset_button;
-
+  
+  //! Container for fly and reset buttons
+  QWidget* button_box;
+  
   //! Label and box arond the spin-rate slider.
   QGroupBox* spinrate_box;
 
   //! Spin rate slider.
   QSlider* spinrate_slider;
 
-  //! Display speed etc
-  QLabel* fly_info;
+  //! Display fly velocity, render info
+  QStatusBar* statusbar;
+
+  //! Last notified message
+  std::string notify_message;
 
   //@{
   //! Parameter of camera position.
@@ -119,16 +130,6 @@ class TriangleMeshViewer : public QGrid
   //! Whether in fly mode
   bool fly_mode;
 
- public:
-  //! Constructor.
-  TriangleMeshViewer(QWidget* parent,const ParametersRender* param,const std::vector<const TriangleMesh*>& m);
-
-  virtual ~TriangleMeshViewer();
-
-  //! Sets the TriangleMesh to be displayed.
-  void set_mesh(const std::vector<const TriangleMesh*>& m);
-
- protected:
   //! Interested in some key presses
   void keyPressEvent(QKeyEvent* e);
 
@@ -146,21 +147,12 @@ class TriangleMeshViewer : public QGrid
 
   //! Interested in wheel for speed
   void wheelEvent(QWheelEvent* e);
-
- public slots:
-  void fly();
-  void unfly();
-  
-  void set_tilt(int v);
-  void set_spinrate(int v);
   
  private slots:
+
   void tick();
 
   void reset();
 };
 
 #endif
-
-
-

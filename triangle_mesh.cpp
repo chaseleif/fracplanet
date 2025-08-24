@@ -1,25 +1,25 @@
-// Source file for fracplanet
-// Copyright (C) 2006 Tim Day
-/*
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+/**************************************************************************/
+/*  Copyright 2009 Tim Day                                                */
+/*                                                                        */
+/*  This file is part of Fracplanet                                       */
+/*                                                                        */
+/*  Fracplanet is free software: you can redistribute it and/or modify    */
+/*  it under the terms of the GNU General Public License as published by  */
+/*  the Free Software Foundation, either version 3 of the License, or     */
+/*  (at your option) any later version.                                   */
+/*                                                                        */
+/*  Fracplanet is distributed in the hope that it will be useful,         */
+/*  but WITHOUT ANY WARRANTY; without even the implied warranty of        */
+/*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         */
+/*  GNU General Public License for more details.                          */
+/*                                                                        */
+/*  You should have received a copy of the GNU General Public License     */
+/*  along with Fracplanet.  If not, see <http://www.gnu.org/licenses/>.   */
+/**************************************************************************/
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+#include "precompiled.h"
 
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-*/
 #include "triangle_mesh.h"
-#include <qmessagebox.h>
-
-#include <fstream>
-#include <sstream>
 
 TriangleMesh::TriangleMesh(Progress* progress)
   :_triangle_switch_colour(0)
@@ -116,14 +116,12 @@ void TriangleMesh::subdivide(const XYZ& variation,uint level,uint levels)
   }
   
   {
-    // Make a copy of our data
-    //! \todo Could be done more efficiently
-    std::vector<Vertex> old_vertex(_vertex);
-    std::vector<Triangle> old_triangle(_triangle); 
+    // Efficiently move aside current geometry, get ready for fresh.
+    std::vector<Vertex> old_vertex;
+    old_vertex.swap(_vertex);
 
-    // Clear ourself out
-    _vertex.clear();
-    _triangle.clear();
+    std::vector<Triangle> old_triangle; 
+    old_triangle.swap(_triangle);
 
     // Copy back all vertices and perturb
     for (uint v=0;v<old_vertex.size();v++)

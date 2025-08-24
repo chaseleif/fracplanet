@@ -1,20 +1,21 @@
-// Source file for fracplanet
-// Copyright (C) 2005 Tim Day
-/*
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-*/
+/**************************************************************************/
+/*  Copyright 2009 Tim Day                                                */
+/*                                                                        */
+/*  This file is part of Fracplanet                                       */
+/*                                                                        */
+/*  Fracplanet is free software: you can redistribute it and/or modify    */
+/*  it under the terms of the GNU General Public License as published by  */
+/*  the Free Software Foundation, either version 3 of the License, or     */
+/*  (at your option) any later version.                                   */
+/*                                                                        */
+/*  Fracplanet is distributed in the hope that it will be useful,         */
+/*  but WITHOUT ANY WARRANTY; without even the implied warranty of        */
+/*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         */
+/*  GNU General Public License for more details.                          */
+/*                                                                        */
+/*  You should have received a copy of the GNU General Public License     */
+/*  along with Fracplanet.  If not, see <http://www.gnu.org/licenses/>.   */
+/**************************************************************************/
 
 /*! \file
   \brief Interface for class Matrix33.
@@ -23,13 +24,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _matrix33_h_
 #define _matrix33_h_
 
-#include "useful.h"
 #include "xyz.h"
 
 //! Class to hold 3x3 matrics
 class Matrix33
 {
  public:
+
   //! Column vectors of matrix
   XYZ basis[3];
 
@@ -75,11 +76,13 @@ class Matrix33
     {
       return XYZ(basis[0].x,basis[1].x,basis[2].x);
     }
+
   //! Extract copy of the second row of matrix
   const XYZ row1() const
     {
       return XYZ(basis[0].y,basis[1].y,basis[2].y);
     }
+
   //! Extract copy of the third row of matrix
   const XYZ row2() const
     {
@@ -87,10 +90,10 @@ class Matrix33
     }
 
   //! Cofactor of an element
-  const float cofactor(uint row,uint col) const;
+  float cofactor(uint row,uint col) const;
 
   //! Determinant of matrix 
-  const float determinant() const;
+  float determinant() const;
 
   //! Return inverse of matrix
   const Matrix33 inverted() const; 
@@ -140,6 +143,7 @@ inline const Matrix33 operator*(const Matrix33& a,const Matrix33& b)
 class Matrix33Identity : public Matrix33
 {
  public:
+
   Matrix33Identity()
     {
       basis[0]=XYZ(1.0f,0.0f,0.0f);
@@ -151,6 +155,7 @@ class Matrix33Identity : public Matrix33
 class Matrix33RotateAboutX : public Matrix33
 {
  public:
+
   Matrix33RotateAboutX(float angle)
     {
       const float ca=cos(angle);
@@ -164,6 +169,7 @@ class Matrix33RotateAboutX : public Matrix33
 class Matrix33RotateAboutY : public Matrix33
 {
  public:
+
   Matrix33RotateAboutY(float angle)
     {
       const float ca=cos(angle);
@@ -177,6 +183,7 @@ class Matrix33RotateAboutY : public Matrix33
 class Matrix33RotateAboutZ : public Matrix33
 {
  public:
+
   Matrix33RotateAboutZ(float angle)
     {
       const float ca=cos(angle);
@@ -190,6 +197,7 @@ class Matrix33RotateAboutZ : public Matrix33
 class Matrix33RotateAboutAxis : public Matrix33
 {
  public:
+
   //! NB Axis must be normalized.
   Matrix33RotateAboutAxis(const XYZ& axis,float angle)
     {

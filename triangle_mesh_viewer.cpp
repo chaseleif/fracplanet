@@ -1,28 +1,32 @@
-// Source file for fracplanet
-// Copyright (C) 2006 Tim Day
-/*
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+/**************************************************************************/
+/*  Copyright 2009 Tim Day                                                */
+/*                                                                        */
+/*  This file is part of Fracplanet                                       */
+/*                                                                        */
+/*  Fracplanet is free software: you can redistribute it and/or modify    */
+/*  it under the terms of the GNU General Public License as published by  */
+/*  the Free Software Foundation, either version 3 of the License, or     */
+/*  (at your option) any later version.                                   */
+/*                                                                        */
+/*  Fracplanet is distributed in the hope that it will be useful,         */
+/*  but WITHOUT ANY WARRANTY; without even the implied warranty of        */
+/*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         */
+/*  GNU General Public License for more details.                          */
+/*                                                                        */
+/*  You should have received a copy of the GNU General Public License     */
+/*  along with Fracplanet.  If not, see <http://www.gnu.org/licenses/>.   */
+/**************************************************************************/
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+#include "precompiled.h"
 
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-*/
 #include "triangle_mesh_viewer.h"
 
-#include <sstream>
-#include <qcursor.h>
-#include <qtooltip.h>
-
-TriangleMeshViewer::TriangleMeshViewer(QWidget* parent,const ParametersRender* param,const std::vector<const TriangleMesh*>& mesh)
-  :QGrid(2,Qt::Horizontal,parent)
+/*! The viewer will be parented on the specified widget, 
+  but with a Qt::Window flag to make it a top-level window
+ */
+TriangleMeshViewer::TriangleMeshViewer(QWidget* parent,const ParametersRender* param,const std::vector<const TriangleMesh*>& mesh,bool verbose)
+  :QWidget(parent,Qt::Window)
+  ,_verbose(verbose)
   ,parameters(param)
   ,camera_position(0.0f,-3.0f,0.0f)
   ,camera_forward(0.0f,1.0f,0.0f)
@@ -42,39 +46,62 @@ TriangleMeshViewer::TriangleMeshViewer(QWidget* parent,const ParametersRender* p
   ,keypressed_mouse_right(false)
   ,fly_mode(false)
 {
-  setSpacing(5);
+  QGridLayout*const grid=new QGridLayout();
+  setLayout(grid);
+  grid->setRowStretch(0,1);
+  grid->setColumnStretch(0,1);
 
-  display=new TriangleMeshViewerDisplay(this,param,mesh);
+  //! \todo Is there any good reason not to enable multisampling by default ?
+  QGLFormat gl_format;
+  gl_format.setSampleBuffers(true);
 
-  tilt_box=new QGroupBox(1,Qt::Horizontal,"Tilt",this);
-  spinrate_box=new QGroupBox(1,Qt::Horizontal,"Spin Rate",this);
+  display=new TriangleMeshViewerDisplay(this,gl_format,param,mesh,_verbose);
+  grid->addWidget(display,0,0);
 
-  tilt_slider=new QSlider(-80,80,10,30,Qt::Vertical,tilt_box);
-  spinrate_slider =new QSlider(-80,80,10, 0,Qt::Horizontal,spinrate_box);
-
-  QVBox*const button_box=new QVBox(this);
-  
-  fly_button=new QPushButton("Fly",button_box);
-  QToolTip::add(fly_button,"While flying:\nEsc will return to normal view.\nMouse controls pitch and yaw.\nLeft and right mouse buttons (or left/right arrow keys) control roll.\nMouse wheel (or up/down arrow keys) control speed.");
-
-  reset_button=new QPushButton("Reset",button_box);
-  QToolTip::add(reset_button,"Press to restore initial default orientation.");
-
+  tilt_box=new QGroupBox("Tilt");
+  tilt_box->setLayout(new QVBoxLayout());
+  tilt_box->layout()->setAlignment(Qt::AlignCenter);
+  tilt_slider=new QSlider(Qt::Vertical);
+  tilt_box->layout()->addWidget(tilt_slider);
+  tilt_slider->setRange(-80,80);
+  tilt_slider->setSingleStep(10);
+  tilt_slider->setValue(30);
   tilt_slider->setTickInterval(10);
-  spinrate_slider->setTickInterval(10);
-
-  tilt_slider->setTickmarks(QSlider::Both);
-  spinrate_slider->setTickmarks(QSlider::Both);
-
+  tilt_slider->setTickPosition(QSlider::TicksBothSides);
   tilt_slider->setTracking(true);
-  spinrate_slider->setTracking(true);
+  grid->addWidget(tilt_box,0,1);
 
-  fly_info=new QLabel("-",this);
-  fly_info->hide();
+  spinrate_box=new QGroupBox("Spin Rate");
+  spinrate_box->setLayout(new QHBoxLayout());
+  spinrate_box->layout()->setAlignment(Qt::AlignCenter);
+  spinrate_slider=new QSlider(Qt::Horizontal);
+  spinrate_box->layout()->addWidget(spinrate_slider);
+  spinrate_slider->setRange(-80,80);
+  spinrate_slider->setSingleStep(10);
+  spinrate_slider->setValue(0);
+  spinrate_slider->setTickInterval(10);
+  spinrate_slider->setTickPosition(QSlider::TicksBothSides);
+  spinrate_slider->setTracking(true);
+  grid->addWidget(spinrate_box,1,0);
+  
+  button_box=new QWidget();
+  button_box->setLayout(new QVBoxLayout());
+  grid->addWidget(button_box,1,1);
+
+  QPushButton*const fly_button=new QPushButton("Fly");
+  button_box->layout()->addWidget(fly_button);
+  fly_button->setToolTip("While flying:\nEsc will return to normal view.\nMouse controls pitch and yaw.\nLeft and right mouse buttons (or left/right arrow keys) control roll.\nMouse wheel (or up/down arrow keys) control speed.");
+
+  QPushButton*const reset_button=new QPushButton("Reset");
+  button_box->layout()->addWidget(reset_button);
+  reset_button->setToolTip("Press to restore initial default orientation.");
+
+  statusbar=new QStatusBar();
+  grid->addWidget(statusbar,2,0,1,2);
 
   //Calling setFocus() when switching to fly mode seems to avoid need for this, but do it anyway.
-  tilt_slider->setFocusPolicy(QWidget::NoFocus);
-  spinrate_slider->setFocusPolicy(QWidget::NoFocus);
+  tilt_slider->setFocusPolicy(Qt::NoFocus);
+  spinrate_slider->setFocusPolicy(Qt::NoFocus);
 
   connect(
 	  tilt_slider,SIGNAL(valueChanged(int)),
@@ -95,8 +122,9 @@ TriangleMeshViewer::TriangleMeshViewer(QWidget* parent,const ParametersRender* p
 
   clock.reset(new QTime());
   clock->start();
+  last_t=0;
 
-  timer=new QTimer(this);  
+  QTimer*const timer=new QTimer(this);  
   connect(timer,SIGNAL(timeout()),this,SLOT(tick()));
   timer->start(static_cast<int>(ceil(1000.0f/parameters->fps_target)));
   
@@ -107,6 +135,11 @@ TriangleMeshViewer::TriangleMeshViewer(QWidget* parent,const ParametersRender* p
 
 TriangleMeshViewer::~TriangleMeshViewer()
 {}
+
+void TriangleMeshViewer::notify(const std::string& msg)
+{
+  notify_message=msg;
+}
 
 void TriangleMeshViewer::keyPressEvent(QKeyEvent* e)
 {
@@ -170,7 +203,6 @@ void TriangleMeshViewer::mouseReleaseEvent(QMouseEvent* e)
     }
 }
 
-
 void TriangleMeshViewer::wheelEvent(QWheelEvent* e)
 {
   if (fly_mode)
@@ -183,7 +215,10 @@ void TriangleMeshViewer::wheelEvent(QWheelEvent* e)
     }
 }
 
-inline float signedsquare(float v) {return (v<0.0f ? -v*v : v*v);}
+inline float signedsquare(float v) 
+{
+  return (v<0.0f ? -v*v : v*v);
+}
 
 void TriangleMeshViewer::mouseMoveEvent(QMouseEvent* e)
 {
@@ -211,10 +246,7 @@ void TriangleMeshViewer::fly()
   spinrate_slider->setValue(0);
   tilt_box->hide();
   spinrate_box->hide();
-  fly_button->hide();
-  reset_button->hide();
-  fly_info->show();
-  display->updateGeometry();
+  button_box->hide();
   setFocus();
   QCursor::setPos(mapToGlobal(QPoint(width()/2,height()/2)));
 }
@@ -222,12 +254,9 @@ void TriangleMeshViewer::fly()
 void TriangleMeshViewer::unfly()
 {
   reset();
-  fly_info->hide();
   tilt_box->show();
   spinrate_box->show();
-  fly_button->show();
-  reset_button->show();
-  display->updateGeometry();
+  button_box->show();
 }
 
 void TriangleMeshViewer::reset()
@@ -243,11 +272,14 @@ void TriangleMeshViewer::reset()
   tilt_slider->setValue(30);
   spinrate_slider->setValue(0);
   object_rotation=0.0f;
+  statusbar->clearMessage();
 }
 
 void TriangleMeshViewer::tick()
 {
-  const float dt=0.001f*clock->restart();
+  const int t=clock->elapsed();
+  const float dt=0.001f*(t-last_t);
+  last_t=t;
 
   camera_roll_rate=0.0f;
   if (keypressed_arrow_left || keypressed_mouse_left) camera_roll_rate+=0.5f;
@@ -278,8 +310,12 @@ void TriangleMeshViewer::tick()
     }
 
   std::ostringstream msg;
-  msg << "Velocity: " << camera_velocity << "  Roll rate:" << camera_roll_rate << "\n";
-  fly_info->setText(msg.str().c_str());
+  if (fly_mode)
+    {
+      msg << "Velocity:" << camera_velocity << "  Roll rate:" << camera_roll_rate << "  ";
+    }
+  msg << notify_message;
+  statusbar->showMessage(msg.str().c_str());
 }
 
 void TriangleMeshViewer::set_tilt(int v)

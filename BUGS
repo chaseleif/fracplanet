@@ -1,4 +1,17 @@
-- The Ubuntu built packages seem to have some problems
+- Display list mode doesn't render sea on Lenovo S10e with Debian/Lenny.
+  Also Ubuntu VMs.
+  Hmmm works fine on 64bit Debian/Lenny with Nvidia OpenGL.
+  Seems to be mesa-only problem.
+  GL_MAX_ELEMENTS_VERTICES & GL_MAX_ELEMENTS_INDICES are only 3000 on mesa.
+  Seems to be a GL error in display list.
+
+- GL area dies on Ubuntu in virtualbox when widget is minimised then restored.
+  (Partial fix in code is to recreate GL area when terrain regenerated)
+
+- Sparc etch build doesn't display on Nvidia i386 machine.
+  However, nvidia OpenGL i386 build does display on the sparc.
+
+- The Ubuntu dapper built packages seem to have some problems
   when meshes are drawn with glDraw[Range]Elements
   (NB the problem seems to be in the built app, NOT the xserver).
   The confusion seems to occur above the 1k primitives mark.
@@ -19,6 +32,10 @@
   doesn't reproduce the problem there.
   Both platforms are gcc 4.0.3.
   It's a mystery!  Any help gratefully received.]
+  Haven't tried edgy yet.
+
+- fracplanet running on 64 bit lenny shows missing polys
+  (all sea?) when viewed by display list from 32bit lenny mesa
 
 - Bear in mind that selecting display list rendering means a copy
   the GL system takes a copy of the triangle mesh.  This needs memory;

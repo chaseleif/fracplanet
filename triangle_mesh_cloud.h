@@ -1,20 +1,21 @@
-// Source file for fracplanet
-// Copyright (C) 2005 Tim Day
-/*
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-*/
+/**************************************************************************/
+/*  Copyright 2009 Tim Day                                                */
+/*                                                                        */
+/*  This file is part of Fracplanet                                       */
+/*                                                                        */
+/*  Fracplanet is free software: you can redistribute it and/or modify    */
+/*  it under the terms of the GNU General Public License as published by  */
+/*  the Free Software Foundation, either version 3 of the License, or     */
+/*  (at your option) any later version.                                   */
+/*                                                                        */
+/*  Fracplanet is distributed in the hope that it will be useful,         */
+/*  but WITHOUT ANY WARRANTY; without even the implied warranty of        */
+/*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         */
+/*  GNU General Public License for more details.                          */
+/*                                                                        */
+/*  You should have received a copy of the GNU General Public License     */
+/*  along with Fracplanet.  If not, see <http://www.gnu.org/licenses/>.   */
+/**************************************************************************/
 
 /*! \file
   \brief Interface for class TriangleMeshCloud and derived classes.
@@ -34,39 +35,39 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 class TriangleMeshCloud : virtual public TriangleMesh
 {
- protected:
-  void do_cloud(const ParametersCloud& parameters);
-
  public:
   
   //! Constructor.
   TriangleMeshCloud(Progress* progress);
 
   //! Destructor.
-  virtual ~TriangleMeshCloud();
+  ~TriangleMeshCloud();
 
   //! Dump mesh to file for POV-Ray
-  virtual void write_povray(std::ofstream& out,const ParametersSave&,const ParametersCloud&) const;
+  void write_povray(std::ofstream& out,const ParametersSave&,const ParametersCloud&) const;
 
   //! Dump mesh to file for Blender
-  virtual void write_blender(std::ofstream& out,const ParametersSave&,const ParametersCloud&,const std::string& mesh_name) const;
+  void write_blender(std::ofstream& out,const ParametersSave&,const ParametersCloud&,const std::string& mesh_name) const;
 
   //! Render the mesh onto a raster image.
   /*! The only interesting thing with clouds is their alpha, so render a greyscale.
   */
-  virtual void render_texture(Raster<uchar>&) const;
+  void render_texture(Raster<uchar>&) const;
+
+ protected:
+
+  void do_cloud(const ParametersCloud& parameters);
 };
 
 //! Class constructing specific case of a planetary cloud.
 class TriangleMeshCloudPlanet : public TriangleMeshSubdividedIcosahedron, virtual public TriangleMeshCloud
 {
- protected:
  public:
   //! Constructor.
   TriangleMeshCloudPlanet(const ParametersCloud& param,Progress* progress);
 
   //! Destructor.
-  virtual ~TriangleMeshCloudPlanet()
+  ~TriangleMeshCloudPlanet()
     {}
 };
 
@@ -78,10 +79,8 @@ class TriangleMeshCloudFlat : public TriangleMeshFlat, virtual public TriangleMe
   TriangleMeshCloudFlat(const ParametersCloud& parameters,Progress* progress);
 
   //! Destructor.
-  virtual ~TriangleMeshCloudFlat()
+  ~TriangleMeshCloudFlat()
     {}
 };
-
-
 
 #endif

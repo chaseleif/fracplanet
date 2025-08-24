@@ -1,20 +1,21 @@
-// Source file for fracplanet
-// Copyright (C) 2006 Tim Day
-/*
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-*/
+/**************************************************************************/
+/*  Copyright 2009 Tim Day                                                */
+/*                                                                        */
+/*  This file is part of Fracplanet                                       */
+/*                                                                        */
+/*  Fracplanet is free software: you can redistribute it and/or modify    */
+/*  it under the terms of the GNU General Public License as published by  */
+/*  the Free Software Foundation, either version 3 of the License, or     */
+/*  (at your option) any later version.                                   */
+/*                                                                        */
+/*  Fracplanet is distributed in the hope that it will be useful,         */
+/*  but WITHOUT ANY WARRANTY; without even the implied warranty of        */
+/*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         */
+/*  GNU General Public License for more details.                          */
+/*                                                                        */
+/*  You should have received a copy of the GNU General Public License     */
+/*  along with Fracplanet.  If not, see <http://www.gnu.org/licenses/>.   */
+/**************************************************************************/
 
 /*! \file
   \brief Interface for class TriangleMeshTerrain and derived classes.
@@ -34,7 +35,30 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 class TriangleMeshTerrain : virtual public TriangleMesh
 {
+ public:
+
+  //! Constructor.
+  TriangleMeshTerrain(Progress* progress);
+
+  //! Destructor.
+  ~TriangleMeshTerrain();
+
+  //! Dump the model as a POV scene.
+  /*! Virtual method because spherical and flat terrains need e.g different sea-level planes and atmosphere layers.
+   */
+  virtual void write_povray(std::ofstream& out,const ParametersSave&,const ParametersTerrain&) const
+    =0;
+
+  //! Dump the model for Blender.
+  /*! Unlike write_povray there are no specialisations for flat/spherical terrain.
+   */
+  virtual void write_blender(std::ofstream& out,const ParametersSave&,const ParametersTerrain&,const std::string& mesh_name) const;
+
+  //! Render the mesh onto raster images (colour texture, and optionally 16-bit DEM and/or normal map).
+  virtual void render_texture(Raster<ByteRGBA>&,Raster<ushort>*,Raster<ByteRGBA>*,bool shading,float ambient,const XYZ& illumination) const;
+
  protected:
+
   //! Indices of the set of triangles with all vertices at sea-level
   std::set<uint> sea_triangles;  
 
@@ -61,58 +85,38 @@ class TriangleMeshTerrain : virtual public TriangleMesh
 
   //! Invokes all the above steps (sea-level through final colouring) on a pre-subdivided triangle mesh.
   void do_terrain(const ParametersTerrain& parameters);
-
- public:
-  //! Constructor.
-  TriangleMeshTerrain(Progress* progress);
-
-  //! Destructor.
-  virtual ~TriangleMeshTerrain();
-
-  //! Dump the model as a POV scene.
-  /*! Virtual method because spherical and flat terrains need e.g different sea-level planes and atmosphere layers.
-   */
-  virtual void write_povray(std::ofstream& out,const ParametersSave&,const ParametersTerrain&) const
-    =0;
-
-  //! Dump the model for Blender.
-  /*! Unlike write_povray there are no specialisations for flat/spherical terrain.
-   */
-  virtual void write_blender(std::ofstream& out,const ParametersSave&,const ParametersTerrain&,const std::string& mesh_name) const;
-
-  //! Render the mesh onto raster images (colour texture, and optionally 16-bit DEM and/or normal map).
-  virtual void render_texture(Raster<ByteRGBA>&,Raster<ushort>*,Raster<ByteRGBA>*,bool shading,float ambient,const XYZ& illumination) const;
 };
 
 //! Class constructing specific case of a planetary terrain.
 class TriangleMeshTerrainPlanet : public TriangleMeshSubdividedIcosahedron, virtual public TriangleMeshTerrain
 {
- protected:
  public:
+
   //! Constructor.
   TriangleMeshTerrainPlanet(const ParametersTerrain& param,Progress* progress);
 
   //! Destructor.
-  virtual ~TriangleMeshTerrainPlanet()
+  ~TriangleMeshTerrainPlanet()
     {}
 
   //! Specifc dump-to-povray for planet terrain.
-  virtual void write_povray(std::ofstream& out,const ParametersSave&,const ParametersTerrain&) const;
+  void write_povray(std::ofstream& out,const ParametersSave&,const ParametersTerrain&) const;
 };
 
 //! Class constructing specific case of a flat-base terrain area.
 class TriangleMeshTerrainFlat : public TriangleMeshFlat, virtual public TriangleMeshTerrain
 {
  public:
+  
   //! Constructor.
   TriangleMeshTerrainFlat(const ParametersTerrain& parameters,Progress* progress);
 
   //! Destructor.
-  virtual ~TriangleMeshTerrainFlat()
+  ~TriangleMeshTerrainFlat()
     {}
 
   //! Specifc dump-to-povray for flat terrain area.
-  virtual void write_povray(std::ofstream& out,const ParametersSave&,const ParametersTerrain&) const;
+  void write_povray(std::ofstream& out,const ParametersSave&,const ParametersTerrain&) const;
 };
 
 #endif

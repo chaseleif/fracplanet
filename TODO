@@ -1,4 +1,35 @@
-- .debs should create a menu entry.  Check it works on Ubuntu too.
+- stopping flying should hold position and allow spin and tilt manipulation
+  (have planet rotate under current viewpoint)
+- cancel button on progress bar
+- plate tectonics simulation:
+  Use zero contour of multiscale noise field to modulate heights (gives some boundary-like features).
+  Maybe another field to modulate activity level there (subduction vs collision; fall vs raise terrain?)
+- coding style is a mess of _-prefixed and not prefixed members.
+  Cleanup should include stronger use of accessors.
+- Get models into K3D somehow 
+  Generating python for K3D's idea of a mesh_source script seems most promising.
+  Does seem to allow setting of vertex properties.
+  Imported file formats all too limiting, and python API maybe better documented
+  than K3D's XML file format.
+- Sourceforge tracker reports problems with Beryl/Compiz.
+  Try it out now have this working with Debian/lenny.
+- Export Ogre .xml mesh files:
+  http://www.ogre3d.org/wiki/index.php/Creating_a_triangle_strip
+  http://www.ogre3d.org/phpBB2/viewtopic.php?p=228739#228739
+  http://www.ogre3d.org/wiki/index.php/Ogre_meshxml_DTD
+- Debian transitioning Apps to Applications (post Etch) see bug 361418
+- Look at Art of Illusion.  Try it's .pov import.
+  (It can also import .obj, but that doesn't support per-vertext colour).
+- Texture export should have the option of a .obj file for the DEM.
+- Export to wings3d ?  Would probably be via .obj
+- If you checkout fracplanet to say fracplanet-0.3.3 then mktgz script doesn't like it.
+  (Not clear how useful this is in practice because you wouldn't tag it in cvs without building
+  tgz first to check testtgz and mkdeb; maybe something like -0.3.3rc1 though ?).
+- .debs should create a menu entry.
+  They do, but yada bug (Debian #419878) getting in the way.
+  Doesn't work on Ubuntu either (install to wrong dir? no update menu?)
+- DEB_BUILD_OPTIONS should also recognize debug ? (and do same as noopt probably)
+  It's not actually in the policy manual.
 - Check clouds tab's documentation.
 - More control over clouds.
 - Texture render should also output a specular map for celestia.
@@ -21,6 +52,9 @@
 - Abort on progress bar (throw exception out to top level ?  Hmmm)
 - Make colours depend on more interesting things than height (e.g slope)
 - Reshow, so don't need to regenerate after hiding viewer
+- Save to texture with shading for spheres should have the option of some
+  sort of "atlas shading": effectively local illumination giving
+  impression terrain has been "unpeeled" then illuminated.
 - Does POV-Ray mesh support given vertex normals ?
   Renderings show facet shading with smooth colouring, which is
   legitimate but maybe not what's wanted.
@@ -41,6 +75,9 @@
   parameter on the render tab (move to colours).  Then shadows
   wouldn't be black; wouldn't get a night-side though, without varying
   ambient around sphere.
+- Give cloud illusion of depth using GLSL (parallax effects).
+- Use GLSL to get hard edged rivers.
+  Not so useful without some way of exporting to PovRay/Blender (texture and texture co-ords?)
 - Shadows of clouds on ground in OpenGL (needs shaders, shadow buffers etc).
 - Optimise matix33 inversion
 - End abuse of alpha as flag; just use it as the emissive quantity.
@@ -75,3 +112,8 @@
 - Split up mesh file (3 parts: vertices, colours, meshing)
 - Ringworld and Dyson sphere/hollow-Earth starting geometries for fun.
 - yafray export (note povray not available for sparc, but yafray is)
+
+Could do, but rejected:
+- Build for ultrasparc 
+  ./configure 'QMAKE_CXXFLAGS_RELEASE += -mcpu=ultrasparc'
+  but it's no faster

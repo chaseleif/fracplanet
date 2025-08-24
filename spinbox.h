@@ -17,18 +17,13 @@
 /*  along with Fracplanet.  If not, see <http://www.gnu.org/licenses/>.   */
 /**************************************************************************/
 
-#include "precompiled.h"
+/*! QSpinBox ctor helper
+ */
+class SpinBox : public QSpinBox
+{
+ public:
 
-#include "parameters_save.h"
+  SpinBox(int lo,int hi,int step);
 
-ParametersSave::ParametersSave(const ParametersRender* pr)
-  :pov_atmosphere(false)
-  ,pov_sea_object(true)
-  ,blender_per_vertex_alpha(false)
-  ,texture_shaded(false)
-  ,texture_height(1024)
-  ,parameters_render(pr)
-{}
-
-ParametersSave::~ParametersSave()
-{}
+  ~SpinBox();
+};

@@ -1,57 +1,76 @@
-// Source file for fracplanet
-// Copyright (C) 2006 Tim Day
-/*
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+/**************************************************************************/
+/*  Copyright 2009 Tim Day                                                */
+/*                                                                        */
+/*  This file is part of Fracplanet                                       */
+/*                                                                        */
+/*  Fracplanet is free software: you can redistribute it and/or modify    */
+/*  it under the terms of the GNU General Public License as published by  */
+/*  the Free Software Foundation, either version 3 of the License, or     */
+/*  (at your option) any later version.                                   */
+/*                                                                        */
+/*  Fracplanet is distributed in the hope that it will be useful,         */
+/*  but WITHOUT ANY WARRANTY; without even the implied warranty of        */
+/*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         */
+/*  GNU General Public License for more details.                          */
+/*                                                                        */
+/*  You should have received a copy of the GNU General Public License     */
+/*  along with Fracplanet.  If not, see <http://www.gnu.org/licenses/>.   */
+/**************************************************************************/
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+#include "precompiled.h"
 
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-*/
 #include "triangle_mesh_viewer_display.h"
 
-#include <iostream>
-#include <sstream>
-#include <iomanip>
-#include <numeric>
-
 #include "matrix33.h"
+#include "triangle_mesh_viewer.h"
 
-TriangleMeshViewerDisplay::TriangleMeshViewerDisplay(QWidget* parent,const ParametersRender* param,const std::vector<const TriangleMesh*>& m)
-  :QGLWidget(parent)
-   ,mesh(m)
-   ,parameters(param)
-   ,frame_number(0)
-   ,width(0)
-   ,height(0)
-   ,frame_time()
-   ,camera_position(3.0f,0.0f,0.0f)
-   ,camera_lookat(0.0f,0.0f,0.0f)
-   ,camera_up(0.0f,0.0f,1.0f)
-   ,object_tilt(30.0f*M_PI/180.0f)
-   ,object_rotation(0.0f)
+TriangleMeshViewerDisplay::TriangleMeshViewerDisplay(TriangleMeshViewer* parent,const QGLFormat& format,const ParametersRender* param,const std::vector<const TriangleMesh*>& m,bool verbose)
+  :QGLWidget(format,parent)
+  ,_notify(*parent)
+  ,_verbose(verbose)
+  ,mesh(m)
+  ,parameters(param)
+  ,gl_display_list_index(0)
+  ,frame_number(0)
+  ,width(0)
+  ,height(0)
+  ,frame_time()
+  ,camera_position(3.0f,0.0f,0.0f)
+  ,camera_lookat(0.0f,0.0f,0.0f)
+  ,camera_up(0.0f,0.0f,1.0f)
+  ,object_tilt(30.0f*M_PI/180.0f)
+  ,object_rotation(0.0f)
 {
-  setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding,QSizePolicy::MinimumExpanding,1,1));
+  assert(isValid());
+  
+  setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
 
   frame_time.start();
   frame_time_reported.start();
+}
 
-  // Zero is not a valid value according to red book, so use it to designate unset
-  gl_display_list_index=0;
+TriangleMeshViewerDisplay::~TriangleMeshViewerDisplay()
+{
+  makeCurrent();
+  if (gl_display_list_index)
+    glDeleteLists(gl_display_list_index,1);
+}
+
+QSize TriangleMeshViewerDisplay::minimumSizeHint() const
+{
+  return QSize(64,64);
+}
+
+QSize TriangleMeshViewerDisplay::sizeHint() const
+{
+  return QSize(512,512);
 }
 
 void TriangleMeshViewerDisplay::set_mesh(const std::vector<const TriangleMesh*>& m)
 {
   mesh=m;
 
-  // If there is a display list allocated for the current mesh, delete it.
+  // If there is a display list allocated for the previous mesh, delete it.
   if (gl_display_list_index!=0)
     {
       glDeleteLists(gl_display_list_index,1);
@@ -106,8 +125,10 @@ void TriangleMeshViewerDisplay::check_for_gl_errors(const char* where) const
 
 void TriangleMeshViewerDisplay::paintGL()
 {
+  assert(isValid());
+
   const FloatRGBA bg=background_colour();
-  glClearColor(bg.r,bg.g,bg.b,1.0);
+  glClearColor(bg.r,bg.g,bg.b,1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   const float a=parameters->ambient;
@@ -157,8 +178,9 @@ void TriangleMeshViewerDisplay::paintGL()
       if (building_display_list)
 	{
 	  gl_display_list_index=glGenLists(1);
+	  assert(gl_display_list_index!=0);
 	  glNewList(gl_display_list_index,GL_COMPILE_AND_EXECUTE);
-	  std::cerr << "Building display list...";
+	  if (_verbose) std::cerr << "Building display list...";
 	}
 
       GLfloat default_material_white[3]={1.0f,1.0f,1.0f};
@@ -213,9 +235,9 @@ void TriangleMeshViewerDisplay::paintGL()
 		  // Builds on some platforms (ie Ubuntu) seem to get in a mess if you render >1k primitives
 		  // (3k vertices).  NB This is a problem in the client; not the xserver.
 		  // Debian (Sarge or Etch) has no problems with unlimited batches.
-		  // Note it's simply the batch size; there doesn't seem to be any problem with the 10Ks or vertices.
+		  // Note it's simply the batch size; there doesn't seem to be any problem with the 10Ks of vertices.
 		  // Since the limited batch size doesn't seem to hurt working implementations we just use it everywhere.
-		  const uint batch_size=1024;
+		  const uint batch_size=1000;
 
 		  // Draw the colour-zero triangles
 		  for (uint t=0;t<it->triangles_of_colour0();t+=batch_size)
@@ -229,7 +251,7 @@ void TriangleMeshViewerDisplay::paintGL()
 			 GL_UNSIGNED_INT,
 			 &(it->triangle(t).vertex(0))
 			 );
-		      if (building_display_list)
+		      if (_verbose && building_display_list)
 			{
 			  std::cerr << ".";
 			}
@@ -249,7 +271,7 @@ void TriangleMeshViewerDisplay::paintGL()
 			 GL_UNSIGNED_INT,
 			 &(it->triangle(t).vertex(0))
 			 );
-		      if (building_display_list)
+		      if (_verbose && building_display_list)
 			{
 			  std::cerr << ".";
 			}
@@ -272,7 +294,7 @@ void TriangleMeshViewerDisplay::paintGL()
 		  glBegin(GL_TRIANGLES);
 		  for (unsigned int t=0;t<it->triangles();t++)
 		    {
-		      if (building_display_list && (t&0x3ff) == 0)
+		      if (_verbose && building_display_list && (t&0x3ff) == 0)
 			{
 			  std::cerr << ".";
 			}
@@ -318,13 +340,15 @@ void TriangleMeshViewerDisplay::paintGL()
       if (building_display_list)
 	{
 	  glEndList();
-	  std::cerr << "\n...built display list\n";
+	  if (_verbose)
+	    {
+	      std::cerr << "\n...built display list\n";
+	    }
 	}
     }
 
-  glFlush();
-
-  check_for_gl_errors("TriangleMeshViewerDisplay::paintGL");
+  if (_verbose)
+    check_for_gl_errors(__PRETTY_FUNCTION__);
 
   // Get time taken since last frame
   const uint dt=frame_time.restart();
@@ -332,53 +356,63 @@ void TriangleMeshViewerDisplay::paintGL()
   // Save it in the queue
   frame_times.push_back(dt);
 
-  // Keep last 10 frame times
-  while (frame_times.size()>10) frame_times.pop_front();
+  // Keep last 30 frame times
+  while (frame_times.size()>30) frame_times.pop_front();
 
   // Only update frame time a couple of times a second to reduce flashing
-  if (parameters->notify && frame_time_reported.elapsed()>500)
-  {    
-    const float average_time=std::accumulate(frame_times.begin(),frame_times.end(),0)/static_cast<float>(frame_times.size());
-   
-    const float fps=1000.0/average_time;
-
-    std::ostringstream report;
-    report.setf(std::ios::fixed);
-    report.precision(1);
+  if (frame_time_reported.elapsed()>500)
+    {    
+      //! \todo Frame time calculation is wrong... need -1 correction to number of frames
+      const float average_time=std::accumulate
+	(
+	 frame_times.begin(),
+	 frame_times.end(),
+	 0
+	 )/static_cast<float>(frame_times.size());
+      
+      const float fps=1000.0/average_time;
+      
+      std::ostringstream report;
+      report.setf(std::ios::fixed);
+      report.precision(1);
+      
+      uint n_triangles=0;
+      uint n_vertices=0;
+      for (uint m=0;m<mesh.size();m++)
+	{
+	  if (mesh[m])
+	    {
+	      n_triangles+=mesh[m]->triangles();
+	      n_vertices+=mesh[m]->vertices();
+	    }
+	}
+      report 
+	<< "Triangles: " 
+	<< n_triangles
+	<< ", "
+	<< "Vertices: " 
+	<< n_vertices 
+	<< ", "
+	<< "FPS: " 
+	<< fps 
+	<< "\n";
     
-    uint n_triangles=0;
-    uint n_vertices=0;
-    for (uint m=0;m<mesh.size();m++)
-      {
-	if (mesh[m])
-	  {
-	    n_triangles+=mesh[m]->triangles();
-	    n_vertices+=mesh[m]->vertices();
-	  }
-      }
-    report 
-      << "Triangles: " 
-      << n_triangles
-      << ", "
-      << "Vertices: " 
-      << n_vertices 
-      << ", "
-      << "FPS: " 
-      << fps 
-      << "\n";
-    
-    parameters->notify->notify(report.str());
-    frame_time_reported.restart();
-  }
+      _notify.notify(report.str());
+      frame_time_reported.restart();
+    }
 }
 
 void TriangleMeshViewerDisplay::initializeGL()
 {
-  const FloatRGBA bg=background_colour();
-  glClearColor(bg.r,bg.g,bg.b,1.0);
+  if (_verbose)
+    {
+      std::cerr << "Double buffering " << (doubleBuffer() ? "ON" : "OFF") << "\n";
+      std::cerr << "Auto Buffer Swap " << (autoBufferSwap() ? "ON" : "OFF") << "\n";
+      std::cerr << "Multisampling    " << (format().sampleBuffers() ? "ON" : "OFF") << "\n";
+    }
 
-  std::cerr << "Double buffering " << (doubleBuffer() ? "ON" : "OFF") << "\n";
-  std::cerr << "Auto Buffer Swap " << (autoBufferSwap() ? "ON" : "OFF") << "\n";
+  const FloatRGBA bg=background_colour();
+  glClearColor(bg.r,bg.g,bg.b,1.0f);
 
   // Switch depth-buffering on
   glEnable(GL_DEPTH_TEST);
@@ -404,18 +438,25 @@ void TriangleMeshViewerDisplay::resizeGL(int w,int h)
   width=w;
   height=h;
 
-  glViewport(0,0,(GLint)w,(GLint)h);
+  if (_verbose)
+    std::cerr << "QGLWidget resized to " << width << "x" << height << std::endl;
+
+  glViewport(0,0,static_cast<GLint>(w),static_cast<GLint>(h));
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   
   // View angle is specified in vertical direction, but we need to exaggerate it if image is taller than wide.
   const float view_angle_degrees=minimum(90.0,width>height ? 45.0 : 45.0*height/width);
 
-  gluPerspective(view_angle_degrees,(float)width/(float)height,0.01,10.0);  // Was 0.1 (too far); 0.001 gives artefacts
+  gluPerspective
+    (
+     view_angle_degrees,
+     static_cast<float>(width)/static_cast<float>(height),
+     0.01,10.0
+     );  // Was 0.1 (too far); 0.001 gives artefacts
 
   glMatrixMode(GL_MODELVIEW);
-
-  updateGL();
+  glLoadIdentity();
 }
 
 void TriangleMeshViewerDisplay::draw_frame(const XYZ& p,const XYZ& l,const XYZ& u,float r,float t)
@@ -430,5 +471,3 @@ void TriangleMeshViewerDisplay::draw_frame(const XYZ& p,const XYZ& l,const XYZ& 
 
   updateGL();
 }
-
-

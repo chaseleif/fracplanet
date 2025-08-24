@@ -1,71 +1,57 @@
-// Source file for fracplanet
-// Copyright (C) 2006 Tim Day
-/*
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+/**************************************************************************/
+/*  Copyright 2009 Tim Day                                                */
+/*                                                                        */
+/*  This file is part of Fracplanet                                       */
+/*                                                                        */
+/*  Fracplanet is free software: you can redistribute it and/or modify    */
+/*  it under the terms of the GNU General Public License as published by  */
+/*  the Free Software Foundation, either version 3 of the License, or     */
+/*  (at your option) any later version.                                   */
+/*                                                                        */
+/*  Fracplanet is distributed in the hope that it will be useful,         */
+/*  but WITHOUT ANY WARRANTY; without even the implied warranty of        */
+/*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         */
+/*  GNU General Public License for more details.                          */
+/*                                                                        */
+/*  You should have received a copy of the GNU General Public License     */
+/*  along with Fracplanet.  If not, see <http://www.gnu.org/licenses/>.   */
+/**************************************************************************/
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+#include "precompiled.h"
 
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-*/
 #include "fracplanet_main.h"
-
-#include <qapplication.h>
-#include <qcursor.h>
-#include <qfiledialog.h>
-#include <qmessagebox.h>
-#include <qeventloop.h>
-
-#include <fstream>
-
-#include <boost/scoped_ptr.hpp>
 
 #include "image.h"
 
-FracplanetMain::FracplanetMain(QWidget* parent,QApplication* app,const boost::program_options::variables_map& opts)
-  :QHBox(parent)
-   ,application(app)
-   ,mesh_terrain(0)
-   ,mesh_cloud(0)
-   ,parameters_terrain()
-   ,parameters_cloud()
-   ,parameters_render(opts)
-   ,parameters_save(&parameters_render)
-   ,last_step(0)
-   ,progress_was_stalled(false)
-   ,startup(true)
+FracplanetMain::FracplanetMain(QWidget* parent,QApplication* app,const boost::program_options::variables_map& opts,bool verbose)
+  :QWidget(parent)
+  ,_verbose(verbose)
+  ,application(app)
+  ,mesh_terrain(0)
+  ,mesh_cloud(0)
+  ,parameters_terrain()
+  ,parameters_cloud()
+  ,parameters_render(opts)
+  ,parameters_save(&parameters_render)
+  ,last_step(0)
+  ,progress_was_stalled(false)
 {
-  vbox=new QVBox(this);
-  setStretchFactor(vbox,1);
-
-  control_terrain=new ControlTerrain(this,this,&parameters_terrain,&parameters_cloud);
-  control_save=new ControlSave(this,this,&parameters_save);
-  control_render=new ControlRender(this,&parameters_render);
-  control_about=new ControlAbout(this);
-
-  tab=new QTabWidget(vbox);
+  setLayout(new QVBoxLayout);
   
+  tab=new QTabWidget();
+  layout()->addWidget(tab);
+  
+  control_terrain=new ControlTerrain(this,&parameters_terrain,&parameters_cloud);
   tab->addTab(control_terrain,"Create");
-  tab->addTab(control_save,"Save");
+
+  control_render=new ControlRender(&parameters_render);
   tab->addTab(control_render,"Render");
+
+  control_save=new ControlSave(this,&parameters_save);
+  tab->addTab(control_save,"Save");
+
+  control_about=new ControlAbout(application);
   tab->addTab(control_about,"About");
-
-  viewer.reset(new TriangleMeshViewer(0,&parameters_render,std::vector<const TriangleMesh*>()));     // Viewer will be a top-level-window
-  viewer->resize(512,512);
-  viewer->move(384,64);  // Moves view away from controls on most window managers
-
-  regenerate();
-
-  raise();   // On app start-up the control panel is the most important thing (regenerate raises the viewer window).
-  
-  startup=false;
 }
 
 FracplanetMain::~FracplanetMain()
@@ -73,11 +59,11 @@ FracplanetMain::~FracplanetMain()
 
 void FracplanetMain::progress_start(uint target,const std::string& info)
 {
-  if (startup) return;
-
   if (!progress_dialog.get())
     {
-      progress_dialog=std::auto_ptr<QProgressDialog>(new QProgressDialog("Progress","Cancel",100,this,0,true));
+      progress_dialog=std::auto_ptr<QProgressDialog>(new QProgressDialog("Progress","Cancel",0,100,this));
+      progress_dialog->setWindowModality(Qt::WindowModal);
+
       progress_dialog->setCancelButton(0);  // Cancel not supported
       progress_dialog->setAutoClose(false); // Avoid it flashing on and off
       progress_dialog->setMinimumDuration(0);
@@ -86,7 +72,7 @@ void FracplanetMain::progress_start(uint target,const std::string& info)
   progress_was_stalled=false;
   progress_info=info;
   progress_dialog->reset();
-  progress_dialog->setTotalSteps(target+1);   // Not sure why, but  +1 seems to avoid the progress bar dropping back to the start on completion
+  progress_dialog->setMaximum(target+1);   // Not sure why, but  +1 seems to avoid the progress bar dropping back to the start on completion
   progress_dialog->setLabelText(progress_info.c_str());
   progress_dialog->show();
 
@@ -106,19 +92,18 @@ void FracplanetMain::progress_stall(const std::string& reason)
 
 void FracplanetMain::progress_step(uint step)
 {
-  if (startup) return;
-
   if (progress_was_stalled) 
     {
-      progress_dialog->setLabelText(progress_info);
+      progress_dialog->setLabelText(progress_info.c_str());
       progress_was_stalled=false;
       application->processEvents();
     }
-      
-  // We might be called lots of times with the same step.  Don't know if Qt handles this efficiently so check for it ourselves.
+
+  // We might be called lots of times with the same step.  
+  // Don't know if Qt handles this efficiently so check for it ourselves.
   if (step!=last_step)
     {
-      progress_dialog->setProgress(step);
+      progress_dialog->setValue(step);
       last_step=step;
       application->processEvents();
     }
@@ -129,8 +114,6 @@ void FracplanetMain::progress_step(uint step)
 
 void FracplanetMain::progress_complete(const std::string& info)
 {
-  if (startup) return;
-
   progress_dialog->setLabelText(info.c_str());
 
   last_step=static_cast<uint>(-1);
@@ -142,13 +125,27 @@ void FracplanetMain::progress_complete(const std::string& info)
 
 void FracplanetMain::regenerate()   //! \todo Should be able to retain ground or clouds
 {
-  viewer->hide();
+  const bool first_viewer=!viewer;
+
+  if (viewer)
+    {
+      viewer->hide();
+      viewer.reset();
+    }
 
   meshes.clear();
-  viewer->set_mesh(meshes);
-
   mesh_terrain.reset();
   mesh_cloud.reset();
+  
+  //! \todo Recreating viewer every time seems like overkill, but Ubuntu (in VM) doesn't seem to like it otherwise.
+  viewer.reset(new TriangleMeshViewer(this,&parameters_render,std::vector<const TriangleMesh*>(),_verbose));
+
+  // Tweak viewer appearance so controls not too dominant
+  QFont viewer_font;
+  viewer_font.setPointSize(viewer_font.pointSize()-2);
+  viewer->setFont(viewer_font);
+  viewer->layout()->setSpacing(2);
+  viewer->layout()->setContentsMargins(2,2,2,2);
 
   const clock_t t0=clock();
 
@@ -199,21 +196,46 @@ void FracplanetMain::regenerate()   //! \todo Should be able to retain ground or
   
   progress_dialog.reset(0);
 
-  std::cerr << "Mesh build time was " << (t1-t0)/static_cast<double>(CLOCKS_PER_SEC) << "s" << std::endl;
+  if (_verbose)
+    std::cerr << "Mesh build time was " << (t1-t0)/static_cast<double>(CLOCKS_PER_SEC) << "s" << std::endl;
 
   viewer->set_mesh(meshes);
-  viewer->showNormal();
+  viewer->showNormal();  // showNormal() needed to restore from minimised
   viewer->raise();
+
+  // Only display this first time viewer is created
+  if (_verbose && first_viewer)
+    {
+      std::cerr << "GL info:" << std::endl;
+      std::cerr << "  Vendor   : " << glGetString(GL_VENDOR) << std::endl;
+      std::cerr << "  Renderer : " << glGetString(GL_RENDERER) << std::endl;
+      std::cerr << "  Version  : " << glGetString(GL_VERSION) << std::endl;
+
+      GLint max_elements_vertices;
+      GLint max_elements_indices; 
+      glGetIntegerv(GL_MAX_ELEMENTS_VERTICES,&max_elements_vertices);
+      glGetIntegerv(GL_MAX_ELEMENTS_INDICES,&max_elements_indices);      
+      std::cerr << "  GL_MAX_ELEMENTS_VERTICES : " << max_elements_vertices << std::endl;
+      std::cerr << "  GL_MAX_ELEMENTS_INDICES : " << max_elements_indices << std::endl;
+
+      //std::cerr << "  GL Extensions are : \"" << glGetString(GL_EXTENSIONS) << "\"" << std::endl;
+    }
 }
 
 void FracplanetMain::save_pov()
 {
-  QString selected_filename=QFileDialog::getSaveFileName(".","POV-Ray (*.pov *.inc)",this,"Save object","Fracplanet: a .pov AND .inc file will be written");
+  const QString selected_filename=QFileDialog::getSaveFileName
+    (
+     this,
+     "POV-Ray",
+     ".",
+     "(*.pov *.inc)"
+     );
   if (selected_filename.isEmpty())
     {
       QMessageBox::critical(this,"Fracplanet","No file specified\nNothing saved");
     }
-  else if (!(selected_filename.upper().endsWith(".POV") || selected_filename.upper().endsWith(".INC")))
+  else if (!(selected_filename.toUpper().endsWith(".POV") || selected_filename.toUpper().endsWith(".INC")))
     {
       QMessageBox::critical(this,"Fracplanet","File selected must have .pov or .inc suffix.");
     }
@@ -221,11 +243,11 @@ void FracplanetMain::save_pov()
     {
       viewer->hide();
       
-      const std::string filename_base(selected_filename.left(selected_filename.length()-4).local8Bit());
+      const std::string filename_base(selected_filename.left(selected_filename.length()-4).toLocal8Bit());
       const std::string filename_pov=filename_base+".pov";
       const std::string filename_inc=filename_base+".inc";
       
-      const uint last_separator=filename_inc.rfind('/');
+      const size_t last_separator=filename_inc.rfind('/');
       const std::string filename_inc_relative_to_pov=
 	"./"
 	+(
@@ -266,7 +288,13 @@ void FracplanetMain::save_pov()
 
 void FracplanetMain::save_blender()
 {
-  QString selected_filename=QFileDialog::getSaveFileName(".","Blender (*.py)",this,"Save object","Fracplanet");
+  const QString selected_filename=QFileDialog::getSaveFileName
+    (
+     this,
+     "Blender",
+     ".",
+     "(*.py)"
+     );
   if (selected_filename.isEmpty())
     {
       QMessageBox::critical(this,"Fracplanet","No file specified\nNothing saved");
@@ -275,7 +303,7 @@ void FracplanetMain::save_blender()
     {
       viewer->hide();
 
-      const std::string filename(selected_filename.local8Bit());
+      const std::string filename(selected_filename.toLocal8Bit());
       std::ofstream out(filename.c_str());
       
       // Boilerplate
@@ -324,20 +352,26 @@ void FracplanetMain::save_texture()
   const uint height=parameters_save.texture_height;
   const uint width=height*mesh_terrain->geometry().scan_convert_image_aspect_ratio();
 
-  QString selected_filename=QFileDialog::getSaveFileName(".","Texture (*.ppm)",this,"Save texture","Fracplanet");
+  const QString selected_filename=QFileDialog::getSaveFileName
+    (
+     this,
+     "Texture",
+     ".",
+     "(*.ppm)"
+     );
   if (selected_filename.isEmpty())
     {
       QMessageBox::critical(this,"Fracplanet","No file specified\nNothing saved");
     }
-  else if (!(selected_filename.upper().endsWith(".PPM")))
+  else if (!(selected_filename.toUpper().endsWith(".PPM")))
     {
       QMessageBox::critical(this,"Fracplanet","File selected must have .ppm suffix.");
     }
   else
     {
-      const std::string filename(selected_filename.local8Bit());
-      const std::string filename_base(selected_filename.left(selected_filename.length()-4).local8Bit());
-      	  
+      const std::string filename(selected_filename.toLocal8Bit());
+      const std::string filename_base(selected_filename.left(selected_filename.length()-4).toLocal8Bit());
+
       viewer->hide();
 
       bool ok=true;

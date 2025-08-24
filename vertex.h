@@ -1,20 +1,21 @@
-// Source file for fracplanet
-// Copyright (C) 2002,2003 Tim Day
-/*
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-*/
+/**************************************************************************/
+/*  Copyright 2009 Tim Day                                                */
+/*                                                                        */
+/*  This file is part of Fracplanet                                       */
+/*                                                                        */
+/*  Fracplanet is free software: you can redistribute it and/or modify    */
+/*  it under the terms of the GNU General Public License as published by  */
+/*  the Free Software Foundation, either version 3 of the License, or     */
+/*  (at your option) any later version.                                   */
+/*                                                                        */
+/*  Fracplanet is distributed in the hope that it will be useful,         */
+/*  but WITHOUT ANY WARRANTY; without even the implied warranty of        */
+/*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         */
+/*  GNU General Public License for more details.                          */
+/*                                                                        */
+/*  You should have received a copy of the GNU General Public License     */
+/*  along with Fracplanet.  If not, see <http://www.gnu.org/licenses/>.   */
+/**************************************************************************/
 
 /*! \file
   \brief Interface for class Vertex.
@@ -23,9 +24,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _vertex_h_
 #define _vertex_h_
 
-#include "useful.h"
-#include "xyz.h"
 #include "rgb.h"
+#include "xyz.h"
 
 //! Class to store vertex state information
 /*! There is no direct access to members.
@@ -34,20 +34,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 class Vertex
 {
- protected:
-  //! Position of vertex.
-  XYZ _position;
-
-  //! Normal at vertex (for smooth shading).
-  XYZ _normal;
-
-  //! Colours at vertex (could be a different colour in different triangles).
-  /*! By convention, in triangle meshes with emissive in use, we overload the alpha 
-    channel to indicate emissive (zero indicates emissive) shading is required.
-    Actual alpha or emissive are therefore mutually exclusive (anticipate alpha for clouds, emissive for ground).
-   */
-  ByteRGBA _colour[2];
-
  public:
 
   //! Constructor.  NB Almost no default values set.
@@ -116,7 +102,21 @@ class Vertex
       assert(c<2);
       _colour[c]=ByteRGBA(col);
     }
-};
 
+ private:
+
+  //! Position of vertex.
+  XYZ _position;
+
+  //! Normal at vertex (for smooth shading).
+  XYZ _normal;
+
+  //! Colours at vertex (could be a different colour in different triangles).
+  /*! By convention, in triangle meshes with emissive in use, we overload the alpha 
+    channel to indicate emissive (zero indicates emissive) shading is required.
+    Actual alpha or emissive are therefore mutually exclusive (anticipate alpha for clouds, emissive for ground).
+   */
+  ByteRGBA _colour[2];
+};
 
 #endif

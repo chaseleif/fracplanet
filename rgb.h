@@ -1,20 +1,22 @@
-// Source file for fracplanet
-// Copyright (C) 2006 Tim Day
-/*
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+/**************************************************************************/
+/*  Copyright 2009 Tim Day                                                */
+/*                                                                        */
+/*  This file is part of Fracplanet                                       */
+/*                                                                        */
+/*  Fracplanet is free software: you can redistribute it and/or modify    */
+/*  it under the terms of the GNU General Public License as published by  */
+/*  the Free Software Foundation, either version 3 of the License, or     */
+/*  (at your option) any later version.                                   */
+/*                                                                        */
+/*  Fracplanet is distributed in the hope that it will be useful,         */
+/*  but WITHOUT ANY WARRANTY; without even the implied warranty of        */
+/*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         */
+/*  GNU General Public License for more details.                          */
+/*                                                                        */
+/*  You should have received a copy of the GNU General Public License     */
+/*  along with Fracplanet.  If not, see <http://www.gnu.org/licenses/>.   */
+/**************************************************************************/
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-*/
 /* Copyright (C) 1998,1999 T Day */
 
 /*! \file
@@ -23,8 +25,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #ifndef _image_rgb_h_
 #define _image_rgb_h_
-
-#include "useful.h"
 
 /*! Direct access to class members is permitted.
   The uchar version is intended as a minimal class for efficient storage of colours.
@@ -141,10 +141,12 @@ class ByteRGBA : public RGBA<uchar>
   ByteRGBA()
     :RGBA<uchar>()
     {}
+
   //! Copy constructor.
   ByteRGBA(const RGBA<uchar>& c)
     :RGBA<uchar>(c)
     {}
+
   //! Componentwise initialization.
   ByteRGBA(uchar vr,uchar vg,uchar vb,uchar va)
     :RGBA<uchar>(vr,vg,vb,va)
@@ -199,6 +201,7 @@ public:
   std::ostream& write(std::ostream&) const;
 
   const std::string format_pov_rgb() const;
+
   const std::string format_pov_rgbf() const;
 };
 
@@ -259,6 +262,3 @@ inline std::ostream& operator<<(std::ostream& out,const FloatRGBA& c)
 }
 
 #endif
-
-
-

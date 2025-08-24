@@ -1,20 +1,21 @@
-// Source file for fracplanet
-// Copyright (C) 2006 Tim Day
-/*
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-*/
+/**************************************************************************/
+/*  Copyright 2009 Tim Day                                                */
+/*                                                                        */
+/*  This file is part of Fracplanet                                       */
+/*                                                                        */
+/*  Fracplanet is free software: you can redistribute it and/or modify    */
+/*  it under the terms of the GNU General Public License as published by  */
+/*  the Free Software Foundation, either version 3 of the License, or     */
+/*  (at your option) any later version.                                   */
+/*                                                                        */
+/*  Fracplanet is distributed in the hope that it will be useful,         */
+/*  but WITHOUT ANY WARRANTY; without even the implied warranty of        */
+/*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         */
+/*  GNU General Public License for more details.                          */
+/*                                                                        */
+/*  You should have received a copy of the GNU General Public License     */
+/*  along with Fracplanet.  If not, see <http://www.gnu.org/licenses/>.   */
+/**************************************************************************/
 
 /*! \file
   \brief Interface for class Geometry and derived classes.
@@ -23,9 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _geometry_h_
 #define _geometry_h_
 
-#include <boost/array.hpp>
-
-#include "useful.h"
 #include "scan.h"
 #include "vertex.h"
 #include "xyz.h"
@@ -49,7 +47,7 @@ public:
     {}
 
   //! Return the height of the given point.
-  virtual const float height(const XYZ& p) const
+  virtual float height(const XYZ& p) const
     =0;
 
   //! Move the specified point vertically until.
@@ -61,7 +59,7 @@ public:
     =0;
 
   //! Really only meaningful for spherical geometries.
-  virtual const float normalised_latitude(const XYZ&p) const
+  virtual float normalised_latitude(const XYZ&p) const
     =0;
 
   //! Return the direction of "up" at the specified point.
@@ -82,16 +80,17 @@ public:
   /*! In some geometries (e.g spherical, but not flat) modifying a point to be at a particular height does not guarantee that exact value will be returned on a susequent height query.
     If this is the case, a non-zero epsilon value can be returned and used as an error tolerence when comparing two heights for equivalence.
    */
-  virtual const float epsilon() const
+  virtual float epsilon() const
     =0;
 
   //! Multiplier for width of a scan-converted image.
-  virtual const uint scan_convert_image_aspect_ratio() const
+  virtual uint scan_convert_image_aspect_ratio() const
     {
       return 1;
     }
 
  protected:
+
   //! Common scan-converter code
   static void scan_convert_common
     (
@@ -110,56 +109,58 @@ public:
 class GeometryFlat : public Geometry
 {
  public:
+
   GeometryFlat(uint seed)
     :Geometry(seed)
     {}
-  virtual ~GeometryFlat()
+
+  ~GeometryFlat()
     {}
 
   //! Height is just the z co-ordinate of a point.
-  virtual const float height(const XYZ& p) const
+  float height(const XYZ& p) const
     {
       return p.z;
     }
   
   //! Setting a height is simply assigning to the z-coordinate.
-  virtual void set_height(XYZ& p,float v) const
+  void set_height(XYZ& p,float v) const
     {
       p.z=v;
     }
   
   //! The mid-point between two points is simply their average.
-  virtual const XYZ midpoint(const XYZ& v0,const XYZ& v1) const
+  const XYZ midpoint(const XYZ& v0,const XYZ& v1) const
     {
       return 0.5f*(v0+v1);
     }
 
   //! This doesn't really mean anything here, so return zero, which would correspond to the equator of a spherical geometry.
-  virtual const float normalised_latitude(const XYZ&) const
+  float normalised_latitude(const XYZ&) const
     {
       return 0.0f;
     }
   
   //! Returns unit z vector.  (Up is the same everywhere in this geometry).
-  virtual const XYZ up(const XYZ&) const
+  const XYZ up(const XYZ&) const
     {
       return XYZ(0.0f,0.0f,1.0f);
     }
 
   //! Returns unit y vector.  (North is the same everywhere in this geometry).
-  virtual const XYZ north(const XYZ&) const
+  const XYZ north(const XYZ&) const
     {
       return XYZ(0.0f,1.0f,0.0f);
     }
 
   //! Returns unit x vector.  (East is the same everywhere in this geometry).
-  virtual const XYZ east(const XYZ&) const
+  const XYZ east(const XYZ&) const
     {
       return XYZ(1.0f,0.0f,0.0f);
     }
 
   //! Add a random variation to a point.
-  virtual const XYZ perturb(const XYZ& p,const XYZ& variation) const
+  const XYZ perturb(const XYZ& p,const XYZ& variation) const
     {
       // The correct thing to do would be to return p+RandomXYZInEllipsoid(_r01,variation);
       // however, this uses a variable number of random number calls which means small parameter changes can have big effects on generated terrain.
@@ -169,7 +170,7 @@ class GeometryFlat : public Geometry
     }
 
   //! Returns zero.  Heights are stored exactly once assigned so no need for non-zero epsilon.
-  virtual const float epsilon() const
+  float epsilon() const
     {
       return 0.0f;  // No need 'cos heights are stored exactly
     }
@@ -191,24 +192,24 @@ class GeometrySpherical : public Geometry
     {}
 
   //! Destructor.
-  virtual ~GeometrySpherical()
+  ~GeometrySpherical()
     {}
 
   //! Height is relative to the surface of the unit radius sphere.
-  virtual const float height(const XYZ& p) const
+  float height(const XYZ& p) const
     {
       return p.magnitude()-1.0f;
     }
 
   //! The height set is relative to the surface of the unit radius sphere.
-  virtual void set_height(XYZ& p,float h) const
+  void set_height(XYZ& p,float h) const
     {
       const float m=p.magnitude();
       p*=((1.0f+h)/m);
     }
 
   //! Don't just take the mid-point of the straight-line path through the sphere's surface: must work relative to the sphere's surface.
-  virtual const XYZ midpoint(const XYZ& v0,const XYZ& v1) const
+  const XYZ midpoint(const XYZ& v0,const XYZ& v1) const
     {
       const float h0=v0.magnitude();
       const float h1=v1.magnitude();
@@ -219,13 +220,13 @@ class GeometrySpherical : public Geometry
     } 
   
   //! Normalised latitude is 1.0 at the north pole, -1.0 at the south pole
-  virtual const float normalised_latitude(const XYZ& p) const
+  float normalised_latitude(const XYZ& p) const
     {
       return p.z;
     }
 
   //! Up is normal to the sphere.
-  virtual const XYZ up(const XYZ& p) const
+  const XYZ up(const XYZ& p) const
     {
       return p.normalised();
     }
@@ -233,7 +234,7 @@ class GeometrySpherical : public Geometry
   //! North is perpendicular to "up" and "east"
   /*! \warning Returns zero vector at the poles
    */
-  virtual const XYZ north(const XYZ& p) const
+  const XYZ north(const XYZ& p) const
     {
       if (p.x==0.0f && p.y==0.0f)
 	return XYZ(0.0f,0.0f,0.0f);
@@ -244,7 +245,7 @@ class GeometrySpherical : public Geometry
   //! East is perpendicular to "up" and the polar vector.
   /*! \warning Returns zero vector at the poles
    */
-  virtual const XYZ east(const XYZ& p) const
+  const XYZ east(const XYZ& p) const
     {
       if (p.x==0.0f && p.y==0.0f)
 	return XYZ(0.0f,0.0f,0.0f);
@@ -255,7 +256,7 @@ class GeometrySpherical : public Geometry
   //! Add a random variation to a point.
   /*! In spherical geometry, the variation ellipsoid tracks the surface (ie z corresponds to up, north to y)
    */
-  virtual const XYZ perturb(const XYZ& p,const XYZ& variation) const
+  const XYZ perturb(const XYZ& p,const XYZ& variation) const
     {
       // The correct thing to do would be to use const RandomXYZInEllipsoid v(_r01,variation);
       // however, this uses a variable number of random number calls which means small parameter changes can have big effects on generated terrain.
@@ -266,24 +267,22 @@ class GeometrySpherical : public Geometry
     }
 
   //! This needs to return something small for the lake flooding algorithm to work.
-  virtual const float epsilon() const
+  float epsilon() const
     {
       return 0.000001f;
     }
 
-  virtual void scan_convert
+  void scan_convert
     (
      const boost::array<XYZ,3>& v,
      const ScanConvertBackend&
      ) const;
 
   //! Return 2.0 for spheres because vertical range is +/- pi/2, horizontal is +/- pi
-  virtual const uint scan_convert_image_aspect_ratio() const
+  uint scan_convert_image_aspect_ratio() const
     {
       return 2;
     }
-
 };
-
 
 #endif
