@@ -24,8 +24,8 @@
 
 #include <GL/glu.h>
 
-TriangleMeshViewerDisplay::TriangleMeshViewerDisplay(TriangleMeshViewer* parent,const QGLFormat& format,const ParametersRender* param,const std::vector<const TriangleMesh*>& m,bool verbose)
-  :QGLWidget(format,parent)
+TriangleMeshViewerDisplay::TriangleMeshViewerDisplay(TriangleMeshViewer* parent,const ParametersRender* param,const std::vector<const TriangleMesh*>& m,bool verbose)
+  :QOpenGLWidget(parent)
   ,_notify(*parent)
   ,_verbose(verbose)
   ,mesh(m)
@@ -404,13 +404,6 @@ void TriangleMeshViewerDisplay::paintGL()
 
 void TriangleMeshViewerDisplay::initializeGL()
 {
-  if (_verbose)
-    {
-      std::cerr << "Double buffering " << (doubleBuffer() ? "ON" : "OFF") << "\n";
-      std::cerr << "Auto Buffer Swap " << (autoBufferSwap() ? "ON" : "OFF") << "\n";
-      std::cerr << "Multisampling    " << (format().sampleBuffers() ? "ON" : "OFF") << "\n";
-    }
-
   const FloatRGBA bg=background_colour();
   glClearColor(bg.r,bg.g,bg.b,1.0f);
 
@@ -439,7 +432,7 @@ void TriangleMeshViewerDisplay::resizeGL(int w,int h)
   height=h;
 
   if (_verbose)
-    std::cerr << "QGLWidget resized to " << width << "x" << height << std::endl;
+    std::cerr << "QOpenGLWidget resized to " << width << "x" << height << std::endl;
 
   glViewport(0,0,static_cast<GLint>(w),static_cast<GLint>(h));
   glMatrixMode(GL_PROJECTION);
@@ -469,5 +462,5 @@ void TriangleMeshViewerDisplay::draw_frame(const XYZ& p,const XYZ& l,const XYZ& 
   object_rotation=r;
   object_tilt=t;
 
-  updateGL();
+  update();
 }

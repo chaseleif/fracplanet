@@ -29,7 +29,8 @@
 #include "qtcommon.h"
 #include "random.h"
 #include "triangle_mesh.h"
-#include "triangle_mesh_viewer_display.h"
+
+class TriangleMeshViewerDisplay;
 
 //! A class to display a triangle mesh.
 /*! Wraps a TriangleMeshViewerDisplay with some controls.

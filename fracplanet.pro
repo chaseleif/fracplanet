@@ -2,7 +2,7 @@ TARGET = fracplanet
 TEMPLATE = app
 
 CONFIG+= qt stl exceptions release  # debug/release
-QT += opengl
+QT += opengl openglwidgets widgets
 
 HEADERS += $$files(*.h)
 SOURCES += $$files(*.cpp)

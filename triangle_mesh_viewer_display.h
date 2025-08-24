@@ -35,7 +35,7 @@
 class TriangleMeshViewer;
 
 //! Contains the actual rendering functionality of a TriangleMeshViewer.
-class TriangleMeshViewerDisplay : public QGLWidget
+class TriangleMeshViewerDisplay : public QOpenGLWidget
 {
  private:
 
@@ -44,7 +44,7 @@ class TriangleMeshViewerDisplay : public QGLWidget
  public:
 
   //! Constructor.
-  TriangleMeshViewerDisplay(TriangleMeshViewer* parent,const QGLFormat& format,const ParametersRender* param,const std::vector<const TriangleMesh*>& m,bool verbose
+  TriangleMeshViewerDisplay(TriangleMeshViewer* parent,const ParametersRender* param,const std::vector<const TriangleMesh*>& m,bool verbose
 );
 
   //! Destructor
