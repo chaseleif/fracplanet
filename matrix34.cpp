@@ -1,5 +1,5 @@
 // Source file for fracplanet
-// Copyright (C) 2006 Tim Day
+// Copyright (C) 2005 Tim Day
 /*
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -16,40 +16,29 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-/*! \file
-  \brief Interface for class ControlSave.
-*/
-#ifndef _control_save_h_
-#define _control_save_h_
+#include "matrix34.h"
 
-#include <qvbox.h>
-#include <qwidget.h>
-
-#include "useful.h"
-#include "parameters_save.h"
-
-class FracplanetMain;
-
-//! Encapsulates GUI elements for controlling save.
-class ControlSave : public QVBox
+Matrix34RotateAboutAxisThrough::Matrix34RotateAboutAxisThrough(const XYZ& axis,float angle,const XYZ& pt)
 {
- private:
-  Q_OBJECT
- 
- protected:
-  //! The parameters set we control
-  ParametersSave*const parameters;
-  
- public:
-  ControlSave(QWidget* parent,FracplanetMain* save_target,ParametersSave* param);
-  virtual ~ControlSave();
+  assign
+    ( 
+     Matrix34Translate(pt)
+     *Matrix34(Matrix33RotateAboutAxis(axis,angle),XYZ(0.0f,0.0f,0.0f))
+     *Matrix34Translate(-pt)
+     );
+}
 
-  public slots:
-   void setAtmosphere(int v);
-   void setSeaSphere(int v);
-   void setPerVertexAlpha(int v);
-};
+Matrix34RotateAboutAxisThrough::Matrix34RotateAboutAxisThrough(const XYZ& axis,const XYZ& pt)
+{
+  const float axis_magnitude=axis.magnitude();
 
+  if (axis_magnitude==0.0f)
+    {
+      assign(Matrix34Identity());
+    }
+  else
+    {
+      assign(Matrix34RotateAboutAxisThrough(axis/axis_magnitude,axis_magnitude,pt));
+    }
+}
 
-
-#endif

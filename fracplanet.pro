@@ -1,7 +1,7 @@
 TEMPLATE = app
 
 # append debug or release
-CONFIG+= qt opengl debug # release
+CONFIG+= qt opengl release
 
 #######################################
 # Installation 
@@ -45,23 +45,30 @@ contains(CPU, xp ){
 # Input files
 
 HEADERS += \
+           control.h \
            control_about.h \
            control_render.h \
            control_save.h \
            control_terrain.h \
+           dialog_documentation.h \
            fracplanet_main.h \
            geometry.h \
            license.h \
+           matrix33.h \
+           matrix34.h \
            noise.h \
+           notifiable.h \
+           parameters.h \
+           parameters_cloud.h \
            parameters_render.h \
            parameters_save.h \
            parameters_terrain.h \
-           pov_mode.h \
            progress.h \
            random.h \
            rgb.h \
            triangle.h \
            triangle_mesh.h \
+           triangle_mesh_cloud.h \
            triangle_mesh_terrain.h \
            triangle_mesh_viewer.h \
            triangle_mesh_viewer_display.h \
@@ -71,24 +78,31 @@ HEADERS += \
            xyz.h
 
 SOURCES += \
+           control.h \
            control_about.cpp \
            control_render.cpp \
            control_save.cpp \
            control_terrain.cpp \
+           dialog_documentation.cpp \
            fracplanet.cpp \
            fracplanet_main.cpp \
            geometry.cpp \
            license.cpp \
+           matrix33.cpp \
+           matrix34.cpp \
            noise.cpp \
+           notifiable.cpp \
+           parameters.cpp \
+           parameters_cloud.cpp \
            parameters_render.cpp \
            parameters_save.cpp \
            parameters_terrain.cpp \
-           pov_mode.cpp \
            progress.cpp \
            random.cpp \
            rgb.cpp \
            triangle.cpp \
            triangle_mesh.cpp \
+           triangle_mesh_cloud.cpp \
            triangle_mesh_terrain.cpp \
            triangle_mesh_viewer.cpp \
            triangle_mesh_viewer_display.cpp \

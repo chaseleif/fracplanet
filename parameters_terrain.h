@@ -26,23 +26,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "useful.h"
 #include "xyz.h"
 #include "rgb.h"
+#include "parameters.h"
 
 //! This class aggregates the controllable parameters for all things related to terrain generation.
 /*! \todo Add these to ParametersTerrain (and ControlTerrain):  float treeline;  float beachline;
 */
-class ParametersTerrain
+class ParametersTerrain : public Parameters
 {
 public:
-  
-  //! What kind of object will be generated.
-  typedef enum {ObjectTypePlanet,ObjectTypeTerrain} ObjectType;
-  ObjectType object_type;
-  
-  //! Random seed for subdivision and noise.
-  uint terrain_seed;
-
-  //! Number of subdivisions.
-  uint subdivisions;
 
   //! Numer of subdivisions (at the top level) which will be unperturbed
   uint subdivisions_unperturbed;
@@ -101,19 +92,16 @@ public:
 
   //@{
   //! Colour for a terrain type.
-  FloatRGB colour_ocean;
-  FloatRGB colour_river;
-  FloatRGB colour_shoreline;
-  FloatRGB colour_low;
-  FloatRGB colour_high;
-  FloatRGB colour_snow;
+  FloatRGBA colour_ocean;
+  FloatRGBA colour_river;
+  FloatRGBA colour_shoreline;
+  FloatRGBA colour_low;
+  FloatRGBA colour_high;
+  FloatRGBA colour_snow;
   //@}
 
   //! Constructor sets up some hopefully sensible defaults.
   ParametersTerrain();
 };
-
-
-
 
 #endif

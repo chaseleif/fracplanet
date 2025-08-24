@@ -1,5 +1,5 @@
 // Source file for fracplanet
-// Copyright (C) 2002,2003 Tim Day
+// Copyright (C) 2006 Tim Day
 /*
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -20,6 +20,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <fstream>
 #include <sstream>
+
+TriangleMesh::TriangleMesh(Progress* progress)
+  :_triangle_switch_colour(0)
+   ,_emissive(0.0)
+   ,_progress(progress)
+{}
+  
+TriangleMesh::~TriangleMesh()
+{}
 
 void TriangleMesh::progress_start(uint steps,const std::string& info) const
 {
@@ -196,7 +205,7 @@ void TriangleMesh::subdivide(uint subdivisions,uint flat_subdivisions,const XYZ&
     }
 }
 
-bool TriangleMesh::write_povray(const std::string& fname_base,const std::string& header,bool exclude_alternate_colour) const
+void TriangleMesh::write_povray(std::ofstream& out,bool exclude_alternate_colour,bool double_illuminate,bool no_shadow) const
 {
   // \todo: No need to dump all vertices when not outputing all triangles.
 
@@ -210,41 +219,14 @@ bool TriangleMesh::write_povray(const std::string& fname_base,const std::string&
   const uint steps=vertices()+vertices()+(exclude_alternate_colour ? 0 : vertices())+triangles_to_output;
   uint step=0;
 
-  progress_start(100,"Writing POV-Ray files");
-
-  const bool save_pov_mode=POVMode::pov_mode();
-  POVMode::pov_mode(true);
-
-  const std::string filename_pov=fname_base+".pov";
-  const std::string filename_inc=fname_base+".inc";
-
-  const uint last_separator=filename_inc.rfind('/');
-  const std::string filename_inc_relative_to_pov=
-    "./"
-    +(
-      last_separator==std::string::npos
-      ?
-      filename_inc
-      :
-      filename_inc.substr(last_separator+1)
-      );
-
-  std::ofstream out_pov(filename_pov.c_str());
-  std::ofstream out_inc(filename_inc.c_str());
-  
-  // Boilerplate for renderer    
-  out_pov << "camera {perspective location <0,1,-4.5> look_at <0,0,0> angle 45}\n";
-  out_pov << "light_source {<100,100,-100> color rgb <1.0,1.0,1.0>}\n";
-  out_pov << "#include \""+filename_inc_relative_to_pov+"\"\n";
+  progress_start(100,"Writing mesh to POV-Ray file");
   
   // Use POV's mesh2 object
   
-  out_inc << header << "\n";
-  
-  out_inc << "mesh2 {\n";
+  out << "mesh2 {\n";
   
   // Output all the vertex co-ordinates
-  out_inc << "vertex_vectors {" << vertices() << ",\n";
+  out << "vertex_vectors {" << vertices() << ",\n";
   
   for (uint v=0;v<vertices();v++)
     {
@@ -252,14 +234,14 @@ bool TriangleMesh::write_povray(const std::string& fname_base,const std::string&
       progress_step((100*step)/steps);
       
       if (v!=0)
-	out_inc << ",";
-      out_inc << vertex(v).position() << "\n";
+	out << ",";
+      out << vertex(v).position().format_pov() << "\n";
     }
-  out_inc << "}\n";
+  out << "}\n";
   
   // Output the vertex colours, and handle emission
   // If exclude_alternate_colour is true, don't output the alternate colours
-  out_inc << "texture_list {" << vertices()+(exclude_alternate_colour ? 0 : vertices()) << "\n";
+  out << "texture_list {" << vertices()+(exclude_alternate_colour ? 0 : vertices()) << "\n";
   
   for (uint c=0;c<(exclude_alternate_colour ? 1 : 2);c++)
     for (uint v=0;v<vertices();v++)
@@ -267,17 +249,22 @@ bool TriangleMesh::write_povray(const std::string& fname_base,const std::string&
 	step++;
 	progress_step((100*step)/steps);
 	
-	out_inc << "texture{pigment{rgb " << FloatRGB(vertex(v).colour(c)) << "}";
-	if (emissive()!=0.0f && vertex(v).emissive(c))
+	out << "texture{pigment{";
+	const FloatRGBA colour(vertex(v).colour(c));
+	if (colour.a==1.0f) out << "rgb " << colour.format_pov_rgb();
+	else out << "rgbf " << colour.format_pov_rgbf();
+	out << "}";
+
+	if (emissive()!=0.0f && vertex(v).colour(c).a==0)
 	  {
-	    out_inc << " finish{ambient " << emissive() << " diffuse " << 1.0f-emissive() << "}";
+	    out << " finish{ambient " << emissive() << " diffuse " << 1.0f-emissive() << "}";
 	  }
-	out_inc << "}\n";
+	out << "}\n";
       }
   
-  out_inc << "}\n";
+  out << "}\n";
   
-  out_inc << "face_indices {" << triangles_to_output << ",\n";
+  out << "face_indices {" << triangles_to_output << ",\n";
   bool skip_initial_comma=true;
   for (uint t=0;t<triangles_to_output;t++)
     {
@@ -287,9 +274,9 @@ bool TriangleMesh::write_povray(const std::string& fname_base,const std::string&
       if (skip_initial_comma)
 	skip_initial_comma=false;
       else
-	out_inc << ",";
+	out << ",";
       
-      out_inc 
+      out 
 	<< "<" 
 	<< triangle(t).vertex(0) 
 	<< "," 
@@ -298,41 +285,146 @@ bool TriangleMesh::write_povray(const std::string& fname_base,const std::string&
 	<< triangle(t).vertex(2) 
 	<< ">"; 
       
-      out_inc << "," << triangle(t).vertex(0)+(t<triangles_of_colour0() ? 0 : vertices());
-      out_inc << "," << triangle(t).vertex(1)+(t<triangles_of_colour0() ? 0 : vertices());
-      out_inc << "," << triangle(t).vertex(2)+(t<triangles_of_colour0() ? 0 : vertices());
-      out_inc << "\n";
+      out << "," << triangle(t).vertex(0)+(t<triangles_of_colour0() ? 0 : vertices());
+      out << "," << triangle(t).vertex(1)+(t<triangles_of_colour0() ? 0 : vertices());
+      out << "," << triangle(t).vertex(2)+(t<triangles_of_colour0() ? 0 : vertices());
+      out << "\n";
     }
-  out_inc << "}\n";
-  
-  out_inc << "}\n";
+  out << "}\n";
+  if (double_illuminate) out << "double_illuminate\n";
+  if (no_shadow) out << "no_shadow\n";
+  out << "}\n";
 
-  out_pov.close();
-  out_inc.close();
-
-  const bool ok=(out_pov && out_inc);
-
-  POVMode::pov_mode(save_pov_mode);
-  
-  progress_complete(ok ? "Wrote POV-Ray files" : "Failed to write POV-Ray files");
-
-  return ok;
+  progress_complete("Wrote mesh to POV-Ray file");
 }
 
-TriangleMeshFlatTriangle::TriangleMeshFlatTriangle(float z,uint seed,Progress* progress)
+/*! If faux_alpha is null, output per-vertex alpha.
+  If a colour is specified, use the vertex alpha to blend with it.
+ */
+void TriangleMesh::write_blender(std::ofstream& out,const std::string& mesh_name,const FloatRGBA* faux_alpha) const
+{
+  std::auto_ptr<ByteRGBA> byte_faux_alpha;
+  if (faux_alpha) byte_faux_alpha=std::auto_ptr<ByteRGBA>(new ByteRGBA(*faux_alpha));
+
+  const uint steps=vertices()+triangles();
+  uint step=0;
+
+  {
+    std::ostringstream msg;
+    msg << "Writing mesh " << mesh_name << " to Blender file";
+    progress_start(100,msg.str());
+  }
+
+  out << "mat0=Material.New()\n";
+  out << "mat0.rgbCol=[0.0,1.0,0.0]\n"; 
+  out << "mat0.mode=Material.Modes.VCOL_PAINT\n";
+  out << "\n";
+  out << "mat1=Material.New()\n";
+  out << "mat1.rgbCol=[0.0,0.0,1.0]\n";
+  out << "mat1.mode=Material.Modes.VCOL_PAINT\n";
+  out << "\n";
+  out << "m=NMesh.GetRaw()\n";
+  out << "m.materials.append(mat0)\n";
+  out << "m.materials.append(mat1)\n";
+  out << "m.hasVertexColours(1)\n";
+  out << "\n";
+
+  for (uint v=0;v<vertices();v++)
+    {
+      step++;
+      progress_step((100*step)/steps);      
+      out << "v(m," << vertex(v).position().format_blender() << ")\n";
+    }
+
+  out << "\n";
+
+  for (uint t=0;t<triangles();t++)
+    {
+      step++;
+      progress_step((100*step)/steps);
+      const uint v0=triangle(t).vertex(0);
+      const uint v1=triangle(t).vertex(1);
+      const uint v2=triangle(t).vertex(2);
+      const uint c=(t<triangles_of_colour0() ? 0 : 1);
+      out
+	<< "f(m,"
+	<< c << ","
+	<< v0 << ","
+	<< v1 << ","
+	<< v2 << ","
+	<< "(" << blender_alpha_workround(byte_faux_alpha.get(),vertex(v0).colour(c)).format_comma() << "),"
+	<< "(" << blender_alpha_workround(byte_faux_alpha.get(),vertex(v1).colour(c)).format_comma() << "),"
+	<< "(" << blender_alpha_workround(byte_faux_alpha.get(),vertex(v2).colour(c)).format_comma() << ")"
+	<< ")\n";
+    }
+
+  out << "\n";
+  out << "NMesh.PutRaw(m,\"" << mesh_name << "\",1)\n";
+  out << "\n";
+  
+  std::ostringstream msg;
+  msg << "Wrote mesh " << mesh_name << " to Blender file";  
+  progress_complete(msg.str());  
+}
+
+ByteRGBA TriangleMesh::blender_alpha_workround(const ByteRGBA* f,const ByteRGBA& c)
+{
+  if (f)
+    {
+      const uint ia=static_cast<uint>(c.a);
+      return ByteRGBA
+	(
+	 (ia*c.r+(255-ia)*f->r)/255,
+	 (ia*c.g+(255-ia)*f->g)/255,
+	 (ia*c.b+(255-ia)*f->b)/255,
+	 255
+	 );
+    }
+  else 
+    return c;
+}
+
+TriangleMeshFlat::TriangleMeshFlat(Parameters::ObjectType obj,float z,uint seed,Progress* progress)
 :TriangleMesh(progress)
  ,_geometry(seed)
 {
-  add_vertex(Vertex(XYZ(0.0,0.0,z)));
-
-  for (uint i=0;i<6;i++)
+  switch(obj)
     {
-      add_vertex(Vertex(XYZ(cos(i*M_PI/3.0),sin(i*M_PI/3.0),z)));
-    }
+    case Parameters::ObjectTypeFlatTriangle:
+      for (uint i=0;i<3;i++)
+	{
+	  add_vertex(Vertex(XYZ(cos(i*2.0*M_PI/3.0),sin(i*2.0*M_PI/3.0),z)));
+	}
+      add_triangle(Triangle(0,1,2));
+      break;
+      
+    case Parameters::ObjectTypeFlatSquare:
+      add_vertex(Vertex(XYZ(0.0,0.0,z)));
+      
+      for (uint i=0;i<4;i++)
+	{
+	  add_vertex(Vertex(XYZ(cos(i*M_PI/2.0),sin(i*M_PI/2.0),z)));
+	}
+      for (uint i=0;i<4;i++)
+	{
+	  add_triangle(Triangle(0,1+i,1+(i+1)%4));
+	}
 
-  for (uint i=0;i<6;i++)
-    {
-      add_triangle(Triangle(0,1+i,1+(i+1)%6));
+      break;
+
+    case Parameters::ObjectTypeFlatHexagon:
+    default:      
+      add_vertex(Vertex(XYZ(0.0,0.0,z)));
+      for (uint i=0;i<6;i++)
+	{
+	  add_vertex(Vertex(XYZ(cos(i*M_PI/3.0),sin(i*M_PI/3.0),z)));
+	}
+      
+      for (uint i=0;i<6;i++)
+	{
+	  add_triangle(Triangle(0,1+i,1+(i+1)%6));
+	}
+      break;
     }
 }
 

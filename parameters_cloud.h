@@ -17,39 +17,33 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 /*! \file
-  \brief Interface for class ControlSave.
+  \brief Interface for class ParametersCloud.
 */
-#ifndef _control_save_h_
-#define _control_save_h_
 
-#include <qvbox.h>
-#include <qwidget.h>
+#ifndef _parameters_cloud_h_
+#define _parameters_cloud_h_
 
 #include "useful.h"
-#include "parameters_save.h"
+#include "xyz.h"
+#include "rgb.h"
+#include "parameters.h"
 
-class FracplanetMain;
-
-//! Encapsulates GUI elements for controlling save.
-class ControlSave : public QVBox
+//! This class aggregates the controllable parameters for all things related to cloud generation.
+class ParametersCloud : public Parameters
 {
- private:
-  Q_OBJECT
- 
- protected:
-  //! The parameters set we control
-  ParametersSave*const parameters;
-  
- public:
-  ControlSave(QWidget* parent,FracplanetMain* save_target,ParametersSave* param);
-  virtual ~ControlSave();
+public:
 
-  public slots:
-   void setAtmosphere(int v);
-   void setSeaSphere(int v);
-   void setPerVertexAlpha(int v);
+  //! Whether clouds will be generated.
+  bool enabled;
+    
+  //! Height of base of clouds
+  float cloudbase;
+
+  //! Colour for clouds
+  FloatRGBA colour;
+
+  //! Constructor sets up some hopefully sensible defaults.
+  ParametersCloud();
 };
-
-
 
 #endif

@@ -30,7 +30,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //! Class to store vertex state information
 /*! There is no direct access to members.
   Should probably be a protected member class of TriangleMesh.
-  sizeof(Vertex) should ideally be 3*4+3*4+2*3=30 but sizeof(ByteRGB) is 4 not 3 so reports 32.
+  sizeof(Vertex) should ideally be 3*4+3*4+2*4=32 
  */
 class Vertex
 {
@@ -42,19 +42,17 @@ class Vertex
   XYZ _normal;
 
   //! Colours at vertex (could be a different colour in different triangles).
-  ByteRGB _colour[2];
-
-  //! Flag that this vertex should use emissive shading (could be different in different triangles).
-  bool _emissive[2];
+  /*! By convention, in triangle meshes with emissive in use, we overload the alpha 
+    channel to indicate emissive (zero indicates emissive) shading is required.
+    Actual alpha or emissive are therefore mutually exclusive (anticipate alpha for clouds, emissive for ground).
+   */
+  ByteRGBA _colour[2];
 
  public:
 
   //! Constructor.  NB Almost no default values set.
   Vertex()
-    {
-      _emissive[0]=false;
-      _emissive[1]=false;
-    }
+    {}
 
   //! Copy constructor.
   Vertex(const Vertex& v)
@@ -63,8 +61,6 @@ class Vertex
     {
       _colour[0]=v._colour[0];
       _colour[1]=v._colour[1];
-      _emissive[0]=v._emissive[0];
-      _emissive[1]=v._emissive[1];
     }
 
   //! Construct from position only.
@@ -72,10 +68,8 @@ class Vertex
     :_position(p)
     ,_normal(0.0,0.0,0.0)
     {
-      _colour[0]=ByteRGB(0,0,0);
-      _colour[1]=ByteRGB(0,0,0);
-      _emissive[0]=false;
-      _emissive[1]=false;
+      _colour[0]=ByteRGBA(0,0,0,255);
+      _colour[1]=ByteRGBA(0,0,0,255);
     }
 
   //! Accessor.
@@ -91,17 +85,10 @@ class Vertex
     }
 
   //! Accessor.
-  const ByteRGB& colour(uint c) const
+  const ByteRGBA& colour(uint c) const
     {
       assert(c<2);
       return _colour[c];
-    }
-
-  //! Accessor.
-  const bool emissive(uint c) const
-    {
-      assert(c<2);
-      return _emissive[c];
     }
 
   //! Accessor.
@@ -117,24 +104,17 @@ class Vertex
     }
 
   //! Accessor.
-  void colour(uint c,const ByteRGB& col)
+  void colour(uint c,const ByteRGBA& col)
     {
       assert(c<2);
       _colour[c]=col;
     }
 
   //! Accessor.
-  void colour(uint c,const FloatRGB& col)
+  void colour(uint c,const FloatRGBA& col)
     {
       assert(c<2);
-      _colour[c]=ByteRGB(col);
-    }
-
-  //! Accessor.
-  void emissive(uint c,bool e)
-    {
-      assert(c<2);
-      _emissive[c]=e;
+      _colour[c]=ByteRGBA(col);
     }
 };
 

@@ -1,5 +1,5 @@
 // Source file for fracplanet
-// Copyright (C) 2002,2003 Tim Day
+// Copyright (C) 2006 Tim Day
 /*
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -25,7 +25,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "useful.h"
 
-class Notifiable;
+#include "notifiable.h"
+#include "rgb.h"
 
 //! Aggregates controllable parameters for all things related to OpenGL rendering.
 class ParametersRender
@@ -43,6 +44,12 @@ public:
   //! Amount of global ambient illumination (0-1)
   float ambient;
 
+  //! Background colour at low altitude
+  FloatRGBA background_colour_low;
+
+  //! Background colour at high altitude
+  FloatRGBA background_colour_high;
+
   //! Target frame rate
   float fps_target;
   
@@ -50,27 +57,10 @@ public:
   Notifiable* notify;
 
   //! Constructor.
-  ParametersRender()
-    :wireframe(false)
-    ,display_list(false)
-    ,joystick_mouse(true)
-    ,ambient(0.1f)
-    ,fps_target(75.0f)
-    ,notify(0)
-  {}
+  ParametersRender();
 
   //! Destructor.
-  ~ParametersRender()
-    {}
-};
-
-// Abstract mixin class for classes with a report(const std::string&) method.
-class Notifiable
-{
- public:
-
-  virtual void notify(const std::string&)
-    =0;
+  ~ParametersRender();
 };
 
 #endif

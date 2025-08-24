@@ -17,19 +17,40 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "xyz.h"
-#include "pov_mode.h"
-#include <iostream>
 
-/*! Usually just outputs whitespace-separated co-ordinates.
-  If POV-Ray mode is enabled, then "<>" bracketed, comma-separated co-ordinates are output with the Y and Z co-ordinates exchanged
-  to (assuming we have been working in a right-handed co-ordinate system with z up) obtain left-handed co-ordinates with y up. 
+#include <iostream>
+#include <sstream>
+
+/*! Table so we can look up by element number.
  */
+XYZ::ElementPtr XYZ::element_table[3]={&XYZ::x,&XYZ::y,&XYZ::z};
+
 std::ostream& XYZ::write(std::ostream& out) const
 {
-  if (POVMode::pov_mode())
-    return out << "<" << x << "," << z << "," << y << ">";
-  else
-    return out << x << " " << y << " " << z;
+  return out << x << " " << y << " " << z;
+}
+
+const std::string XYZ::format_comma() const
+{
+  std::ostringstream s;
+  s << x << "," << y << "," << z;
+  return s.str();
+}
+
+const std::string XYZ::format_blender() const
+{
+  std::ostringstream s;
+  s << x << "," << y << "," << z;
+  return s.str();
+}
+
+/*! Also transposes y and z co-ordinates because of POV-Rays idea of up.
+ */
+const std::string XYZ::format_pov() const
+{
+  std::ostringstream s;
+  s << "<" << x << "," << z << "," << y << ">";
+  return s.str();
 }
 
 RandomXYZInUnitCube::RandomXYZInUnitCube(Random01& rng)

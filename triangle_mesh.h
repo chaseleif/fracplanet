@@ -1,5 +1,5 @@
 // Source file for fracplanet
-// Copyright (C) 2002,2003 Tim Day
+// Copyright (C) 2006 Tim Day
 /*
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -41,18 +41,26 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
   \brief Interface for class TriangleMesh.
 */
 
-//! Contains vertices and triangles of a triangle mesh.  Abstract base class because specific classes must specify a geometry.
-/*! Not as general-purpose as it might be due to constraints imposed by OpenGL.
-  In particular, Triangle can have no attributes (e.g normal, colour) if a single OpenGL call is to be made to draw all triangles,
-  so this information is entirely associated with Vertex.
-  Two colours can be associated with each vertex (required for fracplanet application to obtain sharp coastlines)
-  , and it it a requirement for subclasses to sort triangles so that all those before _triangle_switch_colour use vertex colour index 0,
-  , and those afterwards vertex colour index 1.
-  \todo The geometry() method is a mess.  It would surely be better to have a Geometry* in the base class passed in via the constructor.
- */
+//! Contains vertices and triangles of a triangle mesh.  
+/*! Abstract base class because specific classes must specify a geometry.
+  Not as general-purpose as it might be due to constraints imposed by OpenGL.
+  In particular, Triangle can have no attributes (e.g normal, colour) if a single 
+  OpenGL call is to be made to draw all triangles, so this information is entirely associated with Vertex.
+  Two colours can be associated with each vertex 
+  (required for fracplanet application to obtain sharp coastlines),
+  and it it a requirement for subclasses to sort triangles so that all 
+  those before _triangle_switch_colour use vertex colour index 0,
+  and those afterwards vertex colour index 1.
+  \todo The geometry() method is a mess.  
+  It would surely be better to have a Geometry* in the base class passed in via the constructor.
+*/
 class TriangleMesh
 {
-protected:
+ private:
+  //! Fake per-vertex alpha for Blender.
+  static ByteRGBA blender_alpha_workround(const ByteRGBA*,const ByteRGBA&);
+
+ protected:
   //! The vertices of this mesh.
   std::vector<Vertex> _vertex;
 
@@ -64,25 +72,21 @@ protected:
 
   //! The emission level for vertices with the _emissive flag set
   float _emissive;
-  
+
+  //! Pointer to the progress object to which progress reports should be made.
+  Progress*const _progress;
+    
   //! Accessor.
   Vertex& vertex(uint i)
     {
       return _vertex[i];
     }
-
+  
   //! Accessor.
   Triangle& triangle(uint i)
     {
       return _triangle[i];
     }
-
-  //! Access the geometry of this class (needed to abstract concepts like "mid-point" and "height").
-  virtual const Geometry& geometry() const
-    =0;
-
-  //! Pointer to the progress object to which progress reports should be made.
-  Progress*const _progress;
   
   //! Convenience wrapper with null test.
   void progress_start(uint steps,const std::string& info) const;
@@ -98,23 +102,10 @@ protected:
 
 public:
   //! Constructor.
-  TriangleMesh(Progress* progress)
-    :_emissive(0.0)
-    ,_progress(progress)
-    {}
-
-  //! Copy constructor.
-  TriangleMesh(const TriangleMesh& mesh)
-    :_vertex(mesh._vertex)
-    ,_triangle(mesh._triangle)
-    ,_triangle_switch_colour(0)
-    ,_emissive(mesh._emissive)
-    ,_progress(mesh._progress)
-    {}
+  TriangleMesh(Progress* progress);
   
   //! Destructor.
-  virtual ~TriangleMesh()
-    {}
+  virtual ~TriangleMesh();
 
   //! Accessor
   void set_emissive(float e)
@@ -151,6 +142,10 @@ public:
     {
       return _triangle[i];
     }
+
+  //! Access the geometry of this class (needed to abstract concepts like "mid-point" and "height").
+  virtual const Geometry& geometry() const
+    =0;
 
   //! Return height of a vertex.
   const float vertex_height(uint i) const
@@ -243,22 +238,26 @@ public:
   //! Perform a number of subdivisions, possibly some unperturbed ("flat"), and halving the perturbation variation each iteration.
   void subdivide(uint subdivisions,uint flat_subdivisions,const XYZ& variation);
 
-  //! Dump the mesh to files in a form suitable for use by POVRay.  Returns false if fails.
-  bool write_povray(const std::string& fname_base,const std::string& header,bool exclude_alternate_colour) const;
+  //! Dump the mesh to the file in a form suitable for use by POVRay.
+  void write_povray(std::ofstream& out,bool exclude_alternate_colour,bool double_illuminate,bool no_shadow) const;
+
+  //! Dump the mesh to the file in a form suitable for use by Blender.
+  void write_blender(std::ofstream& out,const std::string& mesh_name,const FloatRGBA* fake_alpha) const;
 };
 
 //! A single triangle lying in the z-plane.
-class TriangleMeshFlatTriangle : virtual public TriangleMesh
+class TriangleMeshFlat : virtual public TriangleMesh
 {
  protected:
   //! The specifc geometry for this mesh.
   GeometryFlat _geometry;
  public:
+
   //! Constructor.
-  TriangleMeshFlatTriangle(float z,uint seed,Progress* progress);
+  TriangleMeshFlat(Parameters::ObjectType obj,float z,uint seed,Progress* progress);
 
   //! Destructor.
-  virtual ~TriangleMeshFlatTriangle()
+  virtual ~TriangleMeshFlat()
     {}  
 
   //! Returns the specific geometry.

@@ -15,14 +15,13 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
+
 #include "parameters_terrain.h"
 
 /*! \todo: Might be better (more portable) to use QTime::currentTime () for random seeds.
  */
 ParametersTerrain::ParametersTerrain()
-  :object_type(ObjectTypePlanet)
-   ,terrain_seed(time(0))
-   ,subdivisions(5)
+  :Parameters()
    ,subdivisions_unperturbed(1)
    ,variation(0.0,0.0,0.125)
    ,noise_terms(0)
@@ -40,11 +39,11 @@ ParametersTerrain::ParametersTerrain()
    ,rivers_seed(time(0))
    ,lake_becomes_sea(0.05)
    ,oceans_and_rivers_emissive(0.0)
-   ,colour_ocean(0.0,0.0,1.0)
-   ,colour_river(0.0,0.0,1.0)
-   ,colour_shoreline(1.0,1.0,0.0)
-   ,colour_low(0.0,1.0,0.0)
-   ,colour_high(1.0,0.5,0.0)
-   ,colour_snow(1.0,1.0,1.0)
+   ,colour_ocean    (0.0,0.0,1.0,1.0)
+   ,colour_river    (0.0,0.0,1.0,1.0)
+   ,colour_shoreline(1.0,1.0,0.0,1.0)
+   ,colour_low      (0.0,1.0,0.0,1.0)
+   ,colour_high     (1.0,0.5,0.0,1.0)
+   ,colour_snow     (1.0,1.0,1.0,1.0)
 {}
 

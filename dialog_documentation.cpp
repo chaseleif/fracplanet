@@ -17,39 +17,42 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 /*! \file
-  \brief Interface for class ControlSave.
+  \brief Implementation of class DialogDocumentation.
 */
-#ifndef _control_save_h_
-#define _control_save_h_
 
-#include <qvbox.h>
-#include <qwidget.h>
+#include "dialog_documentation.h"
 
-#include "useful.h"
-#include "parameters_save.h"
+static const char*const text=
+#include "usage_text.h"
+;
 
-class FracplanetMain;
-
-//! Encapsulates GUI elements for controlling save.
-class ControlSave : public QVBox
+DialogDocumentation::DialogDocumentation(QWidget* parent)
+  :QDialog(parent)
 {
- private:
-  Q_OBJECT
- 
- protected:
-  //! The parameters set we control
-  ParametersSave*const parameters;
+  setCaption("Fracplanet User Manual");
+  setMinimumSize(300,200);
+
+  vbox=new QVBox(this);
   
- public:
-  ControlSave(QWidget* parent,FracplanetMain* save_target,ParametersSave* param);
-  virtual ~ControlSave();
+  browser=new QTextBrowser(vbox);
+  browser->setText(text);
 
-  public slots:
-   void setAtmosphere(int v);
-   void setSeaSphere(int v);
-   void setPerVertexAlpha(int v);
-};
+  ok=new QPushButton("OK",vbox);
 
+  //! \todo: These button settings don't seem to do anything.  Find out what's up.
+  ok->setAutoDefault(true);
+  ok->setDefault(true);
 
+  connect(
+	  ok,SIGNAL(clicked()),
+	  this,SLOT(hide())
+	  );
+}
 
-#endif
+DialogDocumentation::~DialogDocumentation()
+{}
+
+void DialogDocumentation::resizeEvent(QResizeEvent*)
+{
+  vbox->resize(size());
+}

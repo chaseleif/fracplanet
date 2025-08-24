@@ -17,39 +17,34 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 /*! \file
-  \brief Interface for class ControlSave.
+  \brief Interface for class Control.
 */
-#ifndef _control_save_h_
-#define _control_save_h_
 
+#ifndef _control_h_
+#define _control_h_
+
+#include <qiconset.h>
+#include <qpushbutton.h>
 #include <qvbox.h>
-#include <qwidget.h>
 
 #include "useful.h"
-#include "parameters_save.h"
+#include "rgb.h"
 
-class FracplanetMain;
-
-//! Encapsulates GUI elements for controlling save.
-class ControlSave : public QVBox
+//! Base class for other controls; useful for shared stuff.
+class Control : public QVBox
 {
- private:
-  Q_OBJECT
- 
- protected:
-  //! The parameters set we control
-  ParametersSave*const parameters;
-  
  public:
-  ControlSave(QWidget* parent,FracplanetMain* save_target,ParametersSave* param);
-  virtual ~ControlSave();
 
-  public slots:
-   void setAtmosphere(int v);
-   void setSeaSphere(int v);
-   void setPerVertexAlpha(int v);
+  Control(QWidget* parent);
+  virtual ~Control();
+
+  //! Use Qt's colour-picking dialog to replace the referenced colour
+  void pickColour(QPushButton* button,FloatRGBA& colour);
+
+ protected:
+
+  //! Utility function to build a small Qt icon of the specified colour.
+  static QIconSet build_icon_of_colour(const FloatRGBA& col);
 };
-
-
 
 #endif

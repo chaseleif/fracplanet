@@ -1,3 +1,12 @@
+From release 0.2.0:
+ - Bump version number to 0.3.0
+ - Different flat terrain types 
+ - Blender export (faux alpha for clouds).
+ - Internal changes (RGB to RGBA, overload alpha for emission)
+ - Built in docs
+ - Cloud layer (with Blender and POV support).
+ - Render (OpenGL) background colour control
+
 From release 0.1.0:
  - Bump version number to 0.2.0
  - Progress dialog separated and better behaved

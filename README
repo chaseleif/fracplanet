@@ -34,12 +34,12 @@ BUILDING
 Either use the traditional
  ./configure
  make
-(NB THe configure script is NOT autoconf generated)
+(NB The configure script is NOT autoconf generated)
 
 Or just have both done for you by running 
   ./BUILD
 (which also adds $QTDIR/bin to the PATH while running the above commands;
-this may be useful on distros which don't have qmake in the default
+this may be useful on the many distros which don't have qmake in the default
 user path).
 
 NB In either case you do almost certainly DO need your QTDIR 
@@ -49,7 +49,15 @@ This will give you a "fracplanet" executable which you can run with
   ./fracplanet
 or install where you like. 
 
+If you have xsltproc (and sed) installed then you should get a copy of the
+fracplanet.htm documentation built into the application.
+
 [The author primarily uses Debian Sarge these days].
+
+[Selden E Ball Jr reports that "FracPlanet v0.2 builds and runs
+with no errors under the current version of Cygwin for Windows. 
+Of course, the appropriate optional software development subsets
+have to be installed."]
 
 BUILD OPTIONS
 =============
@@ -94,10 +102,10 @@ The biggest factor influencing performance (both generation and
 display) is the degree of subdivision.  For 9 subdivisions
 (for a planet) around 260MB of memory is required.  10 subdivisions
 needs just over a gigabyte.  Needless to say, if it starts swapping,
-it's not pretty.  
-On a 2.4GHz machine with a GeForce4(well, an "MX") and the Nvidia OpenGL
-drivers display rates start to suffer around subdivision level 7.
-I'd be interested to hear how the 6800 series cards handle 20000000 triangles.
+it's not pretty.
+On a 2.4GHz machine with a GeForce4 (well, an "MX") and the Nvidia OpenGL
+drivers display rates start to suffer around subdivision level 7 (for planets).
+A 5200 will get to the next level.  
 See the BUGS file for other issues.
 
 INSTALL
@@ -110,25 +118,12 @@ and some HTML user documentation (fracplanet.htm and fracplanet.css ) in
   /usr/local/share/doc/fracplanet
 Obviously you'll probably need to be root for this stage.
 
-RAY TRACING OUTPUT
-==================
-Once you've run fracplanet and saved a planet/landscape 
-(as e.g terrain.pov and terrain.inc), do e.g
-  povray -Q9 -geometry 768x576 terrain.pov
-Expect to get MANY "determinant too small" messages, 
-especially when using high degrees of subdivision.
-It takes POVRay a LOT longer to read large models than
-to render them, so make the most of it once it's loaded
-and use POVRay's animation capabilities to the max.
-
-[Note: the author has only tested with povray 1.5; if there
-are any problems with the new 1.6 please let me know].
-
 BUILDING CODE DOCUMENTATION
 ===========================
 If you have doxygen (and graphviz) and want to build the code documentation
 subdirectory too, execute 
   ./mkdoc
+The comments may not be particularly useful, or up to date :^)
 
 THANKS
 ======
@@ -136,3 +131,6 @@ For bug reports, feedback and patches:
   Tobias Klausmann 
   Frank Plohmann 
   Steve Roylance 
+  Leon Brooks 
+  Selden E Ball Jr
+

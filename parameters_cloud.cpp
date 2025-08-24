@@ -1,5 +1,5 @@
 // Source file for fracplanet
-// Copyright (C) 2006 Tim Day
+// Copyright (C) 2005 Tim Day
 /*
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -15,41 +15,14 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
+#include "parameters_cloud.h"
 
-/*! \file
-  \brief Interface for class ControlSave.
-*/
-#ifndef _control_save_h_
-#define _control_save_h_
+/*! \todo: Might be better (more portable) to use QTime::currentTime () for random seeds.
+ */
+ParametersCloud::ParametersCloud()
+  :Parameters()
+   ,enabled(false)
+   ,cloudbase(0.1)
+   ,colour(1.0,1.0,1.0,1.0)
+{}
 
-#include <qvbox.h>
-#include <qwidget.h>
-
-#include "useful.h"
-#include "parameters_save.h"
-
-class FracplanetMain;
-
-//! Encapsulates GUI elements for controlling save.
-class ControlSave : public QVBox
-{
- private:
-  Q_OBJECT
- 
- protected:
-  //! The parameters set we control
-  ParametersSave*const parameters;
-  
- public:
-  ControlSave(QWidget* parent,FracplanetMain* save_target,ParametersSave* param);
-  virtual ~ControlSave();
-
-  public slots:
-   void setAtmosphere(int v);
-   void setSeaSphere(int v);
-   void setPerVertexAlpha(int v);
-};
-
-
-
-#endif

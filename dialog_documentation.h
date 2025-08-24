@@ -16,40 +16,45 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-/*! \file
-  \brief Interface for class ControlSave.
+/*! \file 
+  \brief Interface for class DialogDocumentation.
 */
-#ifndef _control_save_h_
-#define _control_save_h_
 
+#ifndef _dialog_documentation_h_
+#define _dialog_documentation_h_
+
+#include <qdialog.h>
 #include <qvbox.h>
-#include <qwidget.h>
+#include <qtextbrowser.h>
+#include <qpushbutton.h>
 
 #include "useful.h"
-#include "parameters_save.h"
 
-class FracplanetMain;
-
-//! Encapsulates GUI elements for controlling save.
-class ControlSave : public QVBox
+//! Provides a dialog box with some user documentation.
+class DialogDocumentation : public QDialog
 {
  private:
   Q_OBJECT
- 
- protected:
-  //! The parameters set we control
-  ParametersSave*const parameters;
-  
+
  public:
-  ControlSave(QWidget* parent,FracplanetMain* save_target,ParametersSave* param);
-  virtual ~ControlSave();
+  //! Constructor.
+  DialogDocumentation(QWidget* parent);
 
-  public slots:
-   void setAtmosphere(int v);
-   void setSeaSphere(int v);
-   void setPerVertexAlpha(int v);
+  //! Destructor.
+  virtual ~DialogDocumentation();
+
+ protected:
+  //! Vertical layout.
+  QVBox* vbox;
+
+  //! Text area.
+  QTextBrowser* browser;
+
+  //! Button to close dialog.
+  QPushButton* ok;
+
+  //! Need to pass resizes on to vbox or things just get chopped.
+  virtual void resizeEvent(QResizeEvent*);
 };
-
-
 
 #endif

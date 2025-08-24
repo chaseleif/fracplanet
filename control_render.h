@@ -1,5 +1,5 @@
 // Source file for fracplanet
-// Copyright (C) 2002,2003 Tim Day
+// Copyright (C) 2006 Tim Day
 /*
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -24,7 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define _control_render_h_
 
 #include <qhbox.h>
-#include <qvbox.h>
 #include <qlabel.h>
 #include <qgroupbox.h>
 #include <qcheckbox.h>
@@ -39,10 +38,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <qslider.h>
 
 #include "useful.h"
+#include "control.h"
+#include "notifiable.h"
 #include "parameters_render.h"
 
 //! Encapsulates GUI elements for controlling OpenGL rendering.
-class ControlRender : public QVBox, public Notifiable
+class ControlRender : public Control, public Notifiable
 {
  private:
   Q_OBJECT;
@@ -58,8 +59,11 @@ class ControlRender : public QVBox, public Notifiable
   QLabel* status;
 
   QVBox* padding;
+
  public:
+
   ControlRender(QWidget* parent,ParametersRender* param);
+  ~ControlRender();
 
   virtual void notify(const std::string& message);
   
@@ -69,6 +73,14 @@ class ControlRender : public QVBox, public Notifiable
   void setDisplayList(int v);
   void setJoystickMouse(int v);
   void setAmbient(int v);
+
+  void pickBackgroundColourLow();
+  void pickBackgroundColourHigh();
+
+ private:
+
+  QPushButton* background_colour_low_button;
+  QPushButton* background_colour_high_button;
 };
 
 #endif

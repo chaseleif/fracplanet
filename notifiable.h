@@ -17,39 +17,21 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 /*! \file
-  \brief Interface for class ControlSave.
+  \brief Interface for class Notifiable.
 */
-#ifndef _control_save_h_
-#define _control_save_h_
 
-#include <qvbox.h>
-#include <qwidget.h>
+#ifndef _parameters_notifiable_h_
+#define _parameters_notifiable_h_
 
 #include "useful.h"
-#include "parameters_save.h"
 
-class FracplanetMain;
-
-//! Encapsulates GUI elements for controlling save.
-class ControlSave : public QVBox
+// Abstract mixin class for classes with a report(const std::string&) method.
+class Notifiable
 {
- private:
-  Q_OBJECT
- 
- protected:
-  //! The parameters set we control
-  ParametersSave*const parameters;
-  
  public:
-  ControlSave(QWidget* parent,FracplanetMain* save_target,ParametersSave* param);
-  virtual ~ControlSave();
 
-  public slots:
-   void setAtmosphere(int v);
-   void setSeaSphere(int v);
-   void setPerVertexAlpha(int v);
+  virtual void notify(const std::string&)
+    =0;
 };
-
-
 
 #endif

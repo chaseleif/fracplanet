@@ -1,5 +1,5 @@
 // Source file for fracplanet
-// Copyright (C) 2006 Tim Day
+// Copyright (C) 2005 Tim Day
 /*
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -17,39 +17,40 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 /*! \file
-  \brief Interface for class ControlSave.
+  \brief Interface for class Parameters.
 */
-#ifndef _control_save_h_
-#define _control_save_h_
 
-#include <qvbox.h>
-#include <qwidget.h>
+#ifndef _parameters_h_
+#define _parameters_h_
 
 #include "useful.h"
-#include "parameters_save.h"
 
-class FracplanetMain;
-
-//! Encapsulates GUI elements for controlling save.
-class ControlSave : public QVBox
+//! Parameters class common base for ParametersTerrain and ParametersCloud.
+class Parameters
 {
- private:
-  Q_OBJECT
- 
- protected:
-  //! The parameters set we control
-  ParametersSave*const parameters;
-  
  public:
-  ControlSave(QWidget* parent,FracplanetMain* save_target,ParametersSave* param);
-  virtual ~ControlSave();
+  
+  //! What kind of object will be generated.
+  typedef enum
+    {
+      ObjectTypePlanet,
+      ObjectTypeFlatHexagon,
+      ObjectTypeFlatTriangle,
+      ObjectTypeFlatSquare
+    }
+  ObjectType;
 
-  public slots:
-   void setAtmosphere(int v);
-   void setSeaSphere(int v);
-   void setPerVertexAlpha(int v);
+  //! Kind of object.
+  ObjectType object_type;
+
+  //! Random seed for subdivision and noise.
+  uint seed;
+
+  //! Number of subdivisions.
+  uint subdivisions;
+
+  //! Constructor sets up some hopefully sensible defaults.
+  Parameters();
 };
-
-
 
 #endif

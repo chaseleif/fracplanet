@@ -24,16 +24,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define _triangle_mesh_terrain_h_
 
 #include "triangle_mesh.h"
+#include "parameters_terrain.h"
 
 //! This class holds all the terrain-related methods.  
 /*! It's intended to be used as a "mix-in", adding terrain generating 
   functionality to terrain objects subclassed from simpler geometries.
-  \todo Multiple inheritance pretty yucky.  Switch to a "Factory" pattern.
+  \todo Ugh!!!  This is really yucky use of multiple inheritance.  Switch to a "Factory" pattern.
  */
 class TriangleMeshTerrain : virtual TriangleMesh
 {
  protected:
-  //! Indices of the set of triangle with all vertices at sea-level
+  //! Indices of the set of triangles with all vertices at sea-level
   std::set<uint> sea_triangles;  
 
   //! Indices of the set of vertices comprising the river network
@@ -57,25 +58,26 @@ class TriangleMeshTerrain : virtual TriangleMesh
   //! Final colouration pass.
   void do_colours(const ParametersTerrain& parameters);
 
+  //! Invokes all the above steps (sea-level through final colouring) on a pre-subdivided triangle mesh.
+  void do_terrain(const ParametersTerrain& parameters);
+
  public:
   //! Constructor.
-  TriangleMeshTerrain(Progress* progress)
-    :TriangleMesh(progress)
-    ,max_height(0.0)
-    {}
+  TriangleMeshTerrain(Progress* progress);
 
   //! Destructor.
-  virtual ~TriangleMeshTerrain()
-    {}
-
-  //! Apply rules for sea-level through final colouring to a pre-subdivided triangle mesh.
-  void do_terrain(const ParametersTerrain& parameters);
+  virtual ~TriangleMeshTerrain();
 
   //! Dump the model as a POV scene.
   /*! Virtual method because spherical and flat terrains need e.g different sea-level planes and atmosphere layers.
    */
-  virtual bool write_povray(const std::string& base_filename,const ParametersSave& param,const ParametersTerrain& parameters_terrain) const
+  virtual void write_povray(std::ofstream& out,const ParametersSave&,const ParametersTerrain&) const
     =0;
+
+  //! Dump the model for Blender.
+  /*! Unlike write_povray there are no specialisations for flat/spherical terrain.
+   */
+  virtual void write_blender(std::ofstream& out,const ParametersSave&,const ParametersTerrain&,const std::string& mesh_name) const;
 };
 
 //! Class constructing specific case of a planetary terrain.
@@ -91,11 +93,11 @@ class TriangleMeshTerrainPlanet : public TriangleMeshSubdividedIcosahedron, virt
     {}
 
   //! Specifc dump-to-povray for planet terrain.
-  virtual bool write_povray(const std::string& base_filename,const ParametersSave& param,const ParametersTerrain& parameters_terrain) const;
+  virtual void write_povray(std::ofstream& out,const ParametersSave&,const ParametersTerrain&) const;
 };
 
 //! Class constructing specific case of a flat-base terrain area.
-class TriangleMeshTerrainFlat : public TriangleMeshFlatTriangle, virtual public TriangleMeshTerrain
+class TriangleMeshTerrainFlat : public TriangleMeshFlat, virtual public TriangleMeshTerrain
 {
  public:
   //! Constructor.
@@ -106,7 +108,7 @@ class TriangleMeshTerrainFlat : public TriangleMeshFlatTriangle, virtual public 
     {}
 
   //! Specifc dump-to-povray for flat terrain area.
-  virtual bool write_povray(const std::string& base_filename,const ParametersSave& param,const ParametersTerrain& parameters_terrain) const;
+  virtual void write_povray(std::ofstream& out,const ParametersSave&,const ParametersTerrain&) const;
 };
 
 #endif

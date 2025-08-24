@@ -1,18 +1,41 @@
-- Clean up progress stuff; push steps->% (and manage rate) into progress API.
+- Mail http://objects.povworld.org/links7.html.  Also links at main POV site.
+
+- Option to save a raster map (cylindrical projection for spheres)
+  for terrain colours, heights, and specular (mainly for sea... and snow ?)
+
+-----
+
+- Move blender/pov save parameters into nested classes,
+  pass parameters into lowest-level save fns rather than multiple args.
+- Scale factor for blender output.
+- Ability to load/save fracplanet parameters (simple keyword=value text file)
+- Mesh optimisation.
+- Save clouds as some more blender-friendly texture type thing.
+- Rename Save to Export.
+- Cloud controls.  Noise parameters and thresholds.
+- More control over cloud undersides, shadowing etc (c.f on/off in POVRay).
+  (Add checkboxes to POVRay save dialog).
+  Maybe need better control over ambient, or actually use the ambient
+  parameter on the render tab (move to colours).  Then shadows
+  wouldn't be black; wouldn't get a night-side though, without varying
+  ambient around sphere.
+- Shadows of clouds on ground in OpenGL (needs shaders, shadow buffers etc).
+- Optimise matix33 inversion
+- End abuse of alpha as flag; just use it as the emissive quantity.
+  Mesh then gets a flag for meaning of alpha channels.
+- Terrain patches but with planetary geometry (ie curvature).
+  This would give a sensible horizon when near the centre of the patch.
+- Control over treeline and shoreline heights (these are hardwired currently).
+- Clean up progress stuff; push steps->% (rate management) into progress API.
 - std::auto_ptr sucks; use something better from boost
 - Add perturbation decay rate for subdivision too.
-- Noise perturbation in X&Y too; would break up subdivision ridge artefacts
-- "man" page instead/besides HTML
-- Built-in manual like evolvotron
-- Render tab setting to hide fly mode instructions
+- Noise perturbation in X&Y too;
+  might help break up subdivision ridge artefacts
+- Basic "man" page besides HTML
 - Make more keys do stuff in fly mode
-- Ability to load/save planet parameters (simple keyword=value text file)
 - Console mode app: read parameters, generate planet.
-- Split up mesh file (3 parts: vertices, colours, meshing)
 - Fix river/lake hang for high subdivision levels
-- Option to add Perlin noise to terrain (might make rivers meander more)
-  Also completely noise generated terrain.
-  Also modify terrain colours
+- Perlin noise to modify terrain colours.
 - Continue GUI procesing when progressing.
 - More feedback (progress bar?) when building display list
   (unfortunately a lot of the delay happens in OpenGL when the list is completed)
@@ -20,4 +43,12 @@
 - Check for OpenGL errors
 - Add control over heights at which colours switch.
 - Improve code documentation.
-- Clouds.
+- Save/load parameters.  Automatic mode (load parameters, generate model, exit).
+- Seasonal variations.
+  e.g snowline, ice packs on ocean.
+- Ability to save sequences of models
+  (probably by offline generation for parameter file load)
+- Are we 64bit ready ?  Onwards to subdivision levels 12,13,14...
+- Put ONLY the terrain data in the .inc file; rest in .pov or a different .inc
+- Split up mesh file (3 parts: vertices, colours, meshing)
+- Ringworld and Dyson sphere/hollow-Earth starting geometries for fun.

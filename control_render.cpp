@@ -1,5 +1,5 @@
 // Source file for fracplanet
-// Copyright (C) 2002,2003 Tim Day
+// Copyright (C) 2006 Tim Day
 /*
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -15,12 +15,13 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
+
 #include "control_render.h"
 
 #include <iostream>
 
 ControlRender::ControlRender(QWidget* parent,ParametersRender* param)
-  :QVBox(parent)
+  :Control(parent)
    ,parameters(param)
 {
   parameters->notify=this;
@@ -33,14 +34,6 @@ ControlRender::ControlRender(QWidget* parent,ParametersRender* param)
 	  this,SLOT(setWireframe(int))
 	  );
 
-  display_list=new QCheckBox("Display list",this);
-  display_list->setChecked(parameters->display_list);
-  QToolTip::add(display_list,"Selects OpenGL rendering via display_list");
-  connect(
-	  display_list,SIGNAL(stateChanged(int)),
-	  this,SLOT(setDisplayList(int))
-	  );
-
   joystick_mouse=new QCheckBox("Joystick mouse-Y (fly mode)",this);
   joystick_mouse->setChecked(parameters->joystick_mouse);
   QToolTip::add(joystick_mouse,"Mouse y-axis functions as joystick in fly mode:\nmouse moved down/pulled-back pitches up.");
@@ -49,6 +42,26 @@ ControlRender::ControlRender(QWidget* parent,ParametersRender* param)
 	  this,SLOT(setJoystickMouse(int))
 	  );
 
+  display_list=new QCheckBox("Display list",this);
+  display_list->setChecked(parameters->display_list);
+  QToolTip::add(display_list,"Use OpenGL display lists; CAUTION: unstable on many platforms");
+  connect(
+	  display_list,SIGNAL(stateChanged(int)),
+	  this,SLOT(setDisplayList(int))
+	  );
+
+  background_colour_low_button=new QPushButton(build_icon_of_colour(parameters->background_colour_low),"Background colour (low altitude)",this);
+  QToolTip::add(background_colour_low_button,"Colour used in display area when the camera is low.");
+  connect(background_colour_low_button,SIGNAL(clicked()),
+	  this,SLOT(pickBackgroundColourLow())
+	  );
+
+  background_colour_high_button=new QPushButton(build_icon_of_colour(parameters->background_colour_high),"Background colour (high altitude)",this);
+  QToolTip::add(background_colour_high_button,"Colour used in display area when the camera is high.");
+  connect(background_colour_high_button,SIGNAL(clicked()),
+	  this,SLOT(pickBackgroundColourHigh())
+	  );
+	  
   QGroupBox* ambient_box=new QGroupBox(3,Qt::Horizontal,"Ambient",this);
   new QLabel("0.0",ambient_box);
   ambient=new QSlider(0,100,10,10,Qt::Horizontal,ambient_box);
@@ -65,6 +78,9 @@ ControlRender::ControlRender(QWidget* parent,ParametersRender* param)
   padding=new QVBox(this);
   setStretchFactor(padding,1);
 }
+
+ControlRender::~ControlRender()
+{}
 
 void ControlRender::notify(const std::string& message)
 {
@@ -89,4 +105,14 @@ void ControlRender::setJoystickMouse(int v)
 void ControlRender::setAmbient(int v)
 {
   parameters->ambient=v/100.0f;
+}
+
+void ControlRender::pickBackgroundColourLow()
+{
+  emit pickColour(background_colour_low_button,parameters->background_colour_low);
+}
+
+void ControlRender::pickBackgroundColourHigh()
+{
+  emit pickColour(background_colour_high_button,parameters->background_colour_high);
 }

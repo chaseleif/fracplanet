@@ -1,5 +1,5 @@
 // Source file for fracplanet
-// Copyright (C) 2002,2003 Tim Day
+// Copyright (C) 2006 Tim Day
 /*
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -35,6 +35,7 @@ extern "C"
 #include <qprogressdialog.h>
 
 #include <iostream>
+#include <vector>
 
 #include "useful.h"
 #include "random.h"
@@ -48,6 +49,7 @@ extern "C"
 #include "control_about.h"
 
 #include "triangle_mesh_terrain.h"
+#include "triangle_mesh_cloud.h"
 #include "triangle_mesh_viewer.h"
 
 //! Top level GUI component for fracplanet application: contains parameter controls and viewing area
@@ -57,16 +59,23 @@ class FracplanetMain : public QHBox , public Progress
   Q_OBJECT
 protected:
   QApplication*const application;
+  
+  //! Owned terrain.
+  const TriangleMeshTerrain* mesh_terrain;
 
-  //! The mesh being rendered.
-  TriangleMeshTerrain* mesh;
+  //! Owned clouds, if any.
+  const TriangleMeshCloud* mesh_cloud;
+
+  //! Downcast version for use by mesh viewer.
+  std::vector<const TriangleMesh*> mesh_triangles;
 
   ParametersTerrain parameters_terrain;
+  ParametersCloud parameters_cloud;
   ParametersSave parameters_save;
   ParametersRender parameters_render;
-
+  
   QVBox* vbox;
-
+  
   ControlRender* control_render;
   ControlSave* control_save;
   ControlTerrain* control_terrain;
@@ -86,19 +95,22 @@ protected:
  public:
   FracplanetMain(QWidget* parent,QApplication* app);
   virtual ~FracplanetMain();
-
+  
   virtual void progress_start(uint target,const std::string&);
   virtual void progress_stall(const std::string& reason);
   virtual void progress_step(uint step);
   virtual void progress_complete(const std::string&);
   
-  public slots:
-
-  //! Invoked by ControlTerrain to generate a new TriangleMesh.
+ public slots:
+    
+  //! Invoked by ControlTerrain to generate new TriangleMesh.
   void regenerate();
+  
+  //! Invoked by ControlSave to save to file (POV-Ray format).
+  void save_pov();
 
-  //! Invoked by ControlSave to save to file.
-  void save();
+  //! Invoked by ControlSave to save to file (Blender format).
+  void save_blender();
 };
 
 #endif
