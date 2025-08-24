@@ -1,5 +1,5 @@
 // Source file for fracplanet
-// Copyright (C) 2002,2003 Tim Day
+// Copyright (C) 2006 Tim Day
 /*
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -39,21 +39,21 @@ class ParametersSave
 
   //! Whether to try using per-vertex-alpha in the blender output.
   bool blender_per_vertex_alpha;
+
+  //! Whether textures should include shading.
+  bool texture_shaded;
   
+  //! Size of texture for texture save (is height; width is implicit).
+  uint texture_height;
+
   //! Save for blender needs access to some of these.
   const ParametersRender*const parameters_render;
 
   //! Constructor.
-  ParametersSave(const ParametersRender* pr)
-    :pov_atmosphere(false)
-    ,pov_sea_object(true)
-    ,blender_per_vertex_alpha(false)
-    ,parameters_render(pr)
-    {}
+  ParametersSave(const ParametersRender*);
 
   //! Destructor.
-  ~ParametersSave()
-    {}
+  ~ParametersSave();
 };
 
 #endif

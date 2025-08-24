@@ -17,3 +17,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "parameters_save.h"
 
+ParametersSave::ParametersSave(const ParametersRender* pr)
+  :pov_atmosphere(false)
+  ,pov_sea_object(true)
+  ,blender_per_vertex_alpha(false)
+  ,texture_shaded(false)
+  ,texture_height(1024)
+  ,parameters_render(pr)
+{}
+
+ParametersSave::~ParametersSave()
+{}

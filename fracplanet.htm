@@ -20,23 +20,51 @@
 <p>
   Fracplanet is an application to generate random planets and terrain with oceans, mountains, icecaps and rivers.
   Parameters are specified interactively and the results displayed using OpenGL.
-  The generated objects can be dumped in Pov-Ray format.
+  The generated objects can be exported in formats directly usable by POV-Ray or Blender,
+  or as more generally useful texture images.
 </p>
 
 <h2>Command line arguments</h2>
 
 <p>
-  Fracplanet has no command line arguments other than those intercepted and interpreted by Qt.
+  Some command line arguments (not listed here) are intercepted and interpreted by Qt.
   These are pretty much what you'd expect most X11 applications to handle 
   e.g <code>-geometry <em>X</em>x<em>Y</em></code>.
+  Fracplanet's own command line arguments are:
 </p>
+
+<dl>
+  <dt>--help, -h</dt>
+  <dd>
+    Display a list of recognised arguments.
+  </dd>
+  <dt>--info, -i</dt>
+  <dd>
+    Display information about fracplanet and the GL graphics system it's running on.
+  </dd>
+  <dt>--display-list, -d</dt>
+  <dd>
+    Start up the application with rendering in display list mode by default
+    (c.f immediate mode).
+    This is particularly useful when the application is running remotely as the
+    generated meshes are then only sent to the local OpenGL display hardware once.
+  </dd>
+  <dt>--invert-mouse-y, -y</dt>
+  <dd>
+    Start application with mouse in non-joystick mode for flight.
+  </dd>
+  <dt>--wireframe, -w</dt>
+  <dd>
+    Start application with rendering set to wireframe mode.
+  </dd>
+</dl>
 
 <h2>GUI</h2>
 
 <p>
-  The fracplanet GUI is a tabbed control.
-  The terrain generated is shown in a separate window (which disappears when regenerating).
-  A progress dialog is generally displayed while generating terrain (except at startup).
+  The main part of the fracplanet GUI is a tabbed control.
+  The terrain generated is shown in a separate window (which disappears while regenerating).
+  A progress dialog is generally displayed while generating terrain (except during application startup).
 </p>
 
 <h3>Create tab</h3>
@@ -282,8 +310,8 @@
 <h3>Save tab</h3>
 
 <p>
-  There are currently two supported save formats; POV-Ray and Blender.
   Strictly speaking it's Export which is provided, not save, as fracplanet's state cannot be restored (yet).
+  There are currently three ways of exporting models from fracplanet for other uses: to POV-Ray, to Blender and as textures.
 </p>
 
 <h4>POV-Ray</h4>
@@ -295,13 +323,15 @@
   </dd>
   <dt>Sea object</dt>
   <dd>
-    This tick-box causes a single sphere or infinite plane to generated for the oceans <em>instead</em> of numerous individual triangles.
+    This tick-box causes a single sphere or infinite plane to generated 
+    for the oceans <em>instead</em> of numerous individual triangles.
   </dd>
   <dt>Base filename</dt>
   <dd>
     Enter the filename root to be used here.
     Two files will be generated, one with &quot;.pov&quot; appended, and one with &quot;.inc&quot; appended.
-    The .inc file actually contains the object (using POV-Rays's <code>mesh2</code> format), plus any other objects generated due to the options above.
+    The .inc file actually contains the object (using POV-Rays's <code>mesh2</code> format),
+    plus any other objects generated due to the options above.
     The .pov just includes the .inc and adds a camera and light source and was primarily intended for testing:
     the expectation is that users will generally include the .inc into their own scenes, probably wrapping it
     in a POV-Ray <code>union</code> with embedded translate/scale/rotate directives).
@@ -309,7 +339,7 @@
   <dt>Save (POV-Ray)</dt>
   <dd>
     Click this button to create the POV-Ray files.
-    This can take quite a long time so the progress bar is used to track the completed percentage.
+    This can take quite a long time so a progress bar is used to track the completed percentage.
   </dd>
 </dl>
 
@@ -340,33 +370,125 @@
   There are additional comments on usage with Blender <a href="#blender">below</a>.
 </p>
 
+<h4>Texture</h4>
+
+<p>
+  Saving as texture(s) gives you a set of 2D images which can be used by other rendering or modelling applications,
+  if not immediately then perhaps after a little massaging with the ImageMagick or NetPBM tools.
+  On saving you'll be prompted for a base <i>filename.ppm</i>.  A number of files are then saved:
+</p>
+
+<dl>
+  <dt>filename.ppm</dt>
+  <dd>
+    The basic texture.
+    This will be embedded in black pixels if the terrain isn't square e.g for the hexagonal terrain area.
+    Planets produce a cylindrically projected latitude-longitude &quot;spheremap&quot;.
+  </dd>
+  <dt>filename_dem.pgm</dt>
+  <dd>
+    The height field (a &quot;DEM&quot; is a Digital Elevation Model).
+    This is output as a PGM image, with heights from 0.0 to 1.0 scaling to 0 to 65535.
+    If the DEM contains a value greater than or equal to 256
+    (highly likely, except for exceptionally flat terrains),
+    then it will be output as a 16-bit PGM which, while part of the PGM
+    <a href="http://netpbm.sourceforge.net/doc/pgm.html">&quot;standard&quot;</a>
+    isn't well supported by many common graphics tools which appear to otherwise offer good PPM support
+    (e.g The Gimp doesn't like it).
+    The NetPBM tools are your best bet to convert this to something else (e.g pnmdepth).
+    Imagemagick's simple &quot;display&quot; tool also handles them well, scaling the maximum value to white.
+  </dd>
+  <dt>filename_norm.pgm</dt>
+  <dd>
+    The surface normals; XYZ components are mapped to RGB; [-1, 1] is scaled to [0,255].
+    It is thought this should be useful for bump-mapping renderers (e.g
+    <a href="http://www.shatters.net/celestia/">Celestia</a>) where the
+    illusion of surface relief is produced by normal perturbation.
+    If you intend to use this file, you almost certainly want to disable shading (see below),
+    as your renderer will compute it later.
+  </dd>
+</dl>
+
+<p>
+  Other texture save options:
+<p>
+
+<dl>
+  <dt>Shaded texture</dt>
+  <dd>
+    Controls whether the texture map includes the effect of lighting.
+    If you intend to use the information in the _norm.ppm or the _dem.pgm files to subsequently compute lighting,
+    then you almost certainly do <em>not</em> want the output texture to be shaded.
+    The amount of ambient lighting is taken from the slider on the render tab.
+    (Disabling shading is the same effect as setting ambient to 1.0).
+    The lighting direction is controlled by the render tab's illumination azimuth and elevation controls.
+    If you want to use the OpenGL window to preview the lighting, you should set zero spin and tilt
+    by hitting the &quot;reset&quot;button and dragging the tilt to the centre (unfortunately, this
+    gives you an edge-on view of flat terrain areas so it may be necessary to use the &quot;fly&quot; mode).
+  </dd>
+  <dt>Texture height</dt>
+  <dd>
+    The number of pixels high the saved texture images are.
+    The width is implicitly determined by the height.
+    For flat terrain the width is the same as the height.
+    For planets the width is twice the height because the height spans [-90,+90] degrees latitude,
+    and the width spans [-180,180] degrees longitude.
+  </dd>
+</dl>
+
+<p>
+  There are additional comments exported texture usage <a href="#texture">below</a>.
+</p>
+
 <h3>Render tab</h3>
 
 <p>
-  Options for OpenGL rendering appear on this tab.
-  Generally none of these makes any difference to the underlying mesh or the saved meshes.
-  (Exception: the &quot;low altitude&quot; colour is used when saving the cloud layer for Blender with the no-per-vertex-alpha workround.)
+  Options controlling OpenGL rendering appear on this tab.
+  Generally none of these makes any difference to the state of the rendered mesh.
+  However, some of the parameters do affect some export methods; see the individual item descriptions.
 </p>
 
-<p>
-  Currently the options are a tickbox to select wireframe rendering,
-  another to select display-list rendering (the default is immediate mode),
-  another to select joystick mode for the mouse in flight mode
-  (this simply affects whether pulling the mouse down the screen flies you in that
-  direction, or whether it's more like an aircraft joystick and pitches you up instead),
-  a slider controlling the amount of ambient light and two colour-picking buttons to select the
-  viewing area's background colour at high and low altitude.
-  The frame rate and current mesh size (number of triangles and vertices) is also displayed.
-</p>
-
-<p>
-  Display list rendering is generally but not always faster
-  (depends on your OpenGL implementation and graphics drivers).
-  The main reason display list is not enabled by default is that
-  the application may pause for a long time while OpenGL processes the
-  list when it is first rendered; the amount of additional memory
-  consumed by the display list is also a problem for very large meshes.  
-</p>
+<dl>
+  <dt>Wireframe checkbox</dt>
+  <dd>
+    Selects OpenGL wireframe rendering mode.
+  </dd>
+  <dt>Joystick mouse checkbox</dt>
+  <dd>
+    This simply affects whether, when in flight mode, pulling the mouse down the screen flies you in that
+    direction, or whether it's more like an aircraft joystick and pitches you up instead.
+  </dd>
+  <dt>Display list</dt>
+  <dd>
+    Selects OpenGL display list rendering.
+    Display list rendering is generally but not always faster
+    (depends on your OpenGL implementation and graphics drivers).
+    The main reason display list rendering is not enabled by default is that
+    the application may pause for a long time while OpenGL processes the
+    list when it is first rendered; the amount of additional memory
+    consumed by the display list is also a problem for very large meshes.  
+  </dd>
+  <dt>Background colour</dt>
+  <dd>
+    Colour picking buttons to control the colour used for the viewing area background.
+    The low altitude colour is also used when exporting a cloud mesh to blender.
+  </dd>
+  <dt>Ambient</dt>
+  <dd>
+    The amount of ambient illumination.
+    This is also used when exporting shaded textures.
+  </dd>
+  <dt>Illumination azimuth and elevation</dt>
+  <dd>
+    Control the illumination direction.
+    These are also used when exporting shaded textures.
+  </dd>
+  <dt>Status</dt>
+  <dd>
+    A text field displaying information about the rendered mesh,
+    and rendering performance (recent average frames-per-second).
+  </dd>
+</dl>
 
 <h3>About tab</h3>
 
@@ -399,14 +521,16 @@
   Hit Esc to return to the normal viewing mode.
 </p>
 
-<a name="pov"><h2>Ray-tracing with POV-Ray</h2></a>
+<h2>Fracplanet exports: usage notes</h2>
+
+<a name="pov"><h3>POV-Ray</h3></a>
 
 <p>
   To ray-trace a saved terrain (saved as terrain.pov and terrain.inc, say) do:<br/>
-  <code>povray -Q9 -geometry 768x576 terrain.pov</code>
+  <code>povray -Q9 -geometry 768x576 terrain.pov</code><br/>
   Expect to get MANY "determinant too small" messages, 
   especially when using high degrees of subdivision.
-  It used to take POVRay a LOT longer to read large models than
+  It used to take POV-Ray a LOT longer to read large models than
   to render them, but it seems to load much faster these days.
 </p>
 
@@ -424,11 +548,11 @@
   (The author currently uses POV-Ray 3.5).
 </p>
 
-<a name="blender"><h2>Loading into Blender</h2></a>
+<a name="blender"><h3>Blender</h3></a>
 
 <p>
   The easiest way to load mesh saved for blender is with blender's <code>-P &lt;filename.py&gt;</code>
-  command line argument.
+  command line argument on startup.
 </p>
 
 <p>
@@ -474,6 +598,53 @@
 
 <p>
   (The author currently uses Blender 2.36).
+</p>
+
+<a name="texture"><h3>Texture Maps</h3></a>
+
+<p>
+  It is hoped that the texture export option will be of use to those building planets for
+  <a href="http://www.shatters.net/celestia/">Celestia</a>.
+  (The author hasn't tried it himself yet; at time of writing Celestia
+  is waiting to make it's way from Debian Unstable to Testing).
+  Celestia's texture formats are well documented at the 
+  <a href="http://www.celestiamotherlode.net/catalog/documentation.html">Celestia Motherlode</a>,
+  in particular by the <a href="http://www.lns.cornell.edu/~seb/celestia/textures.html">Virtual Surface Textures</a>
+  document.
+  The main issues for anyone doing this would seem to be the need to reduce the height map from 16 to 8 bit
+  (easily changed by pnmdepth) and the possiblity that fracplanet's normal map (if used, alternative Celestia
+  can compute normal maps from the height map) needs it's components exchanging or reflecting.
+  Celestia can also take a specular map, generally used to indicating the presence of reflective water (or snow);
+  fracplanet doesn't output this (yet) but it should be possible to fake something by processing the height or texture map.
+</p>
+
+<p>
+  As a simple demonstration of how to use a saved planet texture, here's how to use it as a spheremap in POV-Ray.
+  Save an <em>unshaded</em> <code>spheremap.ppm</code> from fracplanet, and do:<br/>
+  <code>
+    convert spheremap.ppm spheremap.png<br/>
+    convert -depth 8 spheremap_dem.pgm spheremap_dem.png<br/>
+    cat &lt;&lt;EOF &gt; spheremap.pov<br/>
+    camera {perspective location &lt;0,1,-4.5&gt; look_at &lt;0,0,0&gt; angle 45}<br/>
+    light_source {&lt;100,100,-100&gt; color rgb&lt;1,1,1&gt;}<br/>
+    sphere<br/>
+    {<br/>
+    &lt;0,0,0&gt;,1<br/>
+    pigment { image_map {png &quot;spheremap.png&quot; map_type 1} }<br/>
+    normal { bump_map {png &quot;spheremap_dem.png&quot; map_type 1 bump_size 20.0} }<br/>
+    rotate &lt;0,clock*360,0.0&gt;<br/>
+    }<br/>
+    EOF<br/>
+    povray spheremap.pov +KFI1 +KFF100 +W640 +H480 +Of.png<br/>
+    animate f???.png<br/>
+  </code>
+</p>
+
+<p>
+  <code>convert</code> is one of the ImageMagick utilities.
+  You could omit the line beginning &quot;normal&quot; but you will get a rather flat looking planet.
+  The factor of 20.0 at the end of the line is a rather arbitrary parameter.
+  Raise or lower it to adjust the apparent roughness of the planet.
 </p>
 
 <h2>License</h2>

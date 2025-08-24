@@ -23,15 +23,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _triangle_mesh_cloud_h_
 #define _triangle_mesh_cloud_h_
 
-#include "triangle_mesh.h"
+#include "image.h"
 #include "parameters_cloud.h"
+#include "triangle_mesh.h"
 
 //! This class holds all the cloud-related methods.  
 /*! It's intended to be used as a "mix-in", adding cloud generating 
   functionality to cloud objects subclassed from simpler geometries.
-  \todo Ugh!!!  This is really yucky use of multiple inheritance.  Switch to a "Factory" pattern.
+  \todo Ugh!!!  This is really yucky use of multiple inheritance.  Better for these terrain types to have-a TriangleMesh.
  */
-class TriangleMeshCloud : virtual TriangleMesh
+class TriangleMeshCloud : virtual public TriangleMesh
 {
  protected:
   void do_cloud(const ParametersCloud& parameters);
@@ -49,8 +50,12 @@ class TriangleMeshCloud : virtual TriangleMesh
 
   //! Dump mesh to file for Blender
   virtual void write_blender(std::ofstream& out,const ParametersSave&,const ParametersCloud&,const std::string& mesh_name) const;
-};
 
+  //! Render the mesh onto a raster image.
+  /*! The only interesting thing with clouds is their alpha, so render a greyscale.
+  */
+  virtual void render_texture(Raster<uchar>&) const;
+};
 
 //! Class constructing specific case of a planetary cloud.
 class TriangleMeshCloudPlanet : public TriangleMeshSubdividedIcosahedron, virtual public TriangleMeshCloud

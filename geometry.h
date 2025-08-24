@@ -1,5 +1,5 @@
 // Source file for fracplanet
-// Copyright (C) 2002,2003 Tim Day
+// Copyright (C) 2006 Tim Day
 /*
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -23,7 +23,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _geometry_h_
 #define _geometry_h_
 
+#include <boost/array.hpp>
+
 #include "useful.h"
+#include "scan.h"
+#include "vertex.h"
 #include "xyz.h"
 
 //! Class to provide abstract interface to different world geometries.
@@ -31,15 +35,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
   For example, the direction of "up" at a given point will vary depending on whether we are generating a flat world or a spherical one.
   \todo Most of these methods should have their implementation moved geometry.cpp
  */
-class Geometry
+class Geometry : public ScanConverter
 {
- protected:
-  //! Random number generator used for perturbations and the like.
-  /*! Declared mutable so it can be used in const methods.
-    \todo Perhaps theres a better place for the geometry random number generator to live: having it here creates the anomaly of having to pass random seeds into apparently non-random objects like icosahedrons etc.
-   */
-  mutable Random01 _r01;
-
 public:
 
   //! Constructor.
@@ -87,6 +84,26 @@ public:
    */
   virtual const float epsilon() const
     =0;
+
+  //! Multiplier for width of a scan-converted image.
+  virtual const uint scan_convert_image_aspect_ratio() const
+    {
+      return 1;
+    }
+
+ protected:
+  //! Common scan-converter code
+  static void scan_convert_common
+    (
+     const boost::array<XYZ,3>& v,
+     const ScanConvertBackend& backend
+     );
+
+  //! Random number generator used for perturbations and the like.
+  /*! Declared mutable so it can be used in const methods.
+    \todo Perhaps theres a better place for the geometry random number generator to live: having it here creates the anomaly of having to pass random seeds into apparently non-random objects like icosahedrons etc.
+   */
+  mutable Random01 _r01;
 };
 
 //! Concrete class providing a flat geometry (in the XY-plane, with Z up).
@@ -156,6 +173,12 @@ class GeometryFlat : public Geometry
     {
       return 0.0f;  // No need 'cos heights are stored exactly
     }
+
+  virtual void scan_convert
+    (
+     const boost::array<XYZ,3>& v,
+     const ScanConvertBackend&
+     ) const;
 };
 
 //! Concrete class providing a flat geometry (a sphere with nominal radius 1, equator in the XY-plane, Z axis through the poles).
@@ -247,6 +270,19 @@ class GeometrySpherical : public Geometry
     {
       return 0.000001f;
     }
+
+  virtual void scan_convert
+    (
+     const boost::array<XYZ,3>& v,
+     const ScanConvertBackend&
+     ) const;
+
+  //! Return 2.0 for spheres because vertical range is +/- pi/2, horizontal is +/- pi
+  virtual const uint scan_convert_image_aspect_ratio() const
+    {
+      return 2;
+    }
+
 };
 
 

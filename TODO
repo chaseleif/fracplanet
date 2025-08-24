@@ -1,15 +1,17 @@
-- Mail http://objects.povworld.org/links7.html.  Also links at main POV site.
-
-- Option to save a raster map (cylindrical projection for spheres)
-  for terrain colours, heights, and specular (mainly for sea... and snow ?)
-
------
-
+- Texture render should also output a specular map for celestia.
+- Texture render for clouds.
+  Will end up with duplicate code in cloud mesh's ScanConvertHelper; use boost MPL/Fusion
+  to produce generic version operating on general tuples ?
+- Craters.
+- X gets bigger when using display lists (remote only?) ?  Need to delete on exit ?
+- Find out what the errors are this guy mentions:
+    http://douglas.nerad.org/journal/2006/04/03/
+- More control over weather and clouds.
 - Another noise fn to modulate (c.f add) subdivided terrain.
   Might help reduce middle-of-continent highlands.
 - Another noise fn to modulate power law
   (could get a mix of highland mesas and deposited lowlands).
-- Time terrain generation and report to cerr or render tab.
+- Use Qtime (getCurrentTime) instead of time (more portable ?).
 - Abort on progress bar (throw exception out to top level ?  Hmmm)
 - Make colours depend on more interesting things than height (e.g slope)
 - Reshow, so don't need to regenerate after hiding viewer
@@ -65,3 +67,4 @@
 - Put ONLY the terrain data in the .inc file; rest in .pov or a different .inc
 - Split up mesh file (3 parts: vertices, colours, meshing)
 - Ringworld and Dyson sphere/hollow-Earth starting geometries for fun.
+- yafray export (note povray not available for sparc, but yafray is)

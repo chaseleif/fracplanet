@@ -28,14 +28,14 @@ TriangleMeshViewerDisplay::TriangleMeshViewerDisplay(QWidget* parent,const Param
   :QGLWidget(parent)
    ,mesh(m)
    ,parameters(param)
-   ,frame(0)
+   ,frame_number(0)
    ,width(0)
    ,height(0)
    ,frame_time()
-   ,camera_position(-3.0f,0.0f,0.0f)
+   ,camera_position(3.0f,0.0f,0.0f)
    ,camera_lookat(0.0f,0.0f,0.0f)
    ,camera_up(0.0f,0.0f,1.0f)
-   ,object_tilt(-30.0f*M_PI/180.0f)
+   ,object_tilt(30.0f*M_PI/180.0f)
    ,object_rotation(0.0f)
 {
   setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding,QSizePolicy::MinimumExpanding,1,1));
@@ -64,7 +64,7 @@ const FloatRGBA TriangleMeshViewerDisplay::background_colour() const
   if (mesh.empty()) return FloatRGBA(0.0f,0.0f,0.0f,1.0f);
 
   const XYZ relative_camera_position 
-    =Matrix33RotateAboutZ(-object_rotation)*Matrix33RotateAboutY(-object_tilt)*camera_position;
+    =Matrix33RotateAboutZ(-object_rotation)*Matrix33RotateAboutX(-object_tilt)*camera_position;
 
   const float h = mesh[0]->geometry().height(relative_camera_position);
   if (h<=0.0f) return parameters->background_colour_low;
@@ -72,6 +72,37 @@ const FloatRGBA TriangleMeshViewerDisplay::background_colour() const
   else return parameters->background_colour_low+h*(parameters->background_colour_high-parameters->background_colour_low);
 }
 
+void TriangleMeshViewerDisplay::check_for_gl_errors(const char* where) const
+{
+  GLenum error;
+  while ((error=glGetError())!=GL_NO_ERROR)
+    {
+      std::ostringstream msg;
+      msg << "GL error in " << where << " (frame " << frame_number << ") : ";
+      switch (error)
+	{
+	case GL_INVALID_ENUM:
+	  msg << "GL_INVALID_ENUM";
+	  break;
+	case GL_INVALID_VALUE:
+	  msg << "GL_INVALID_VALUE";
+	  break;
+	case GL_INVALID_OPERATION:
+	  msg << "GL_INVALID_OPERATION";
+	  break;
+	case GL_STACK_OVERFLOW:
+	  msg << "GL_STACK_OVERFLOW";
+	  break;
+	case GL_STACK_UNDERFLOW:
+	  msg << "GL_STACK_UNDERFLOW";
+	  break;
+	case GL_OUT_OF_MEMORY:
+	  msg << "GL_OUT_OF_MEMORY";
+	  break;
+	}
+      std::cerr << msg.str() << std::endl;
+    }
+}
 
 void TriangleMeshViewerDisplay::paintGL()
 {
@@ -96,10 +127,18 @@ void TriangleMeshViewerDisplay::paintGL()
 	    camera_up.x      ,camera_up.y      ,camera_up.z
 	    );
 
-  GLfloat light_position[]={-2.0,-3.0,1.0,0.0};  
+  const XYZ light_direction(parameters->illumination_direction());
+  GLfloat light_position[]=
+    {
+      light_direction.x,
+      light_direction.y,
+      light_direction.z,
+      0.0f     // w=0 implies directional light
+    };
+
   glLightfv(GL_LIGHT0,GL_POSITION,light_position);
 
-  glRotatef((180.0/M_PI)*object_tilt,0.0,1.0,0.0);
+  glRotatef((180.0/M_PI)*object_tilt,1.0,0.0,0.0);
   glRotatef((180.0/M_PI)*object_rotation,0.0,0.0,1.0);
 
   glPolygonMode(GL_FRONT_AND_BACK,(parameters->wireframe ? GL_LINE : GL_FILL));
@@ -119,7 +158,7 @@ void TriangleMeshViewerDisplay::paintGL()
 	{
 	  gl_display_list_index=glGenLists(1);
 	  glNewList(gl_display_list_index,GL_COMPILE_AND_EXECUTE);
-	  std::cerr << "Building display list...\n";
+	  std::cerr << "Building display list...";
 	}
 
       GLfloat default_material_white[3]={1.0f,1.0f,1.0f};
@@ -170,13 +209,51 @@ void TriangleMeshViewerDisplay::paintGL()
 		  
 		  // For a second mesh, use alpha (actually could use it for the first mesh but maybe it's more efficient not to).
 		  glColorPointer((m==0 ? 3 : 4),GL_UNSIGNED_BYTE,sizeof(Vertex),&(it->vertex(0).colour(0).r));
-		  
+
+		  // Builds on some platforms (ie Ubuntu) seem to get in a mess if you render >1k primitives
+		  // (3k vertices).  NB This is a problem in the client; not the xserver.
+		  // Debian (Sarge or Etch) has no problems with unlimited batches.
+		  // Note it's simply the batch size; there doesn't seem to be any problem with the 10Ks or vertices.
+		  // Since the limited batch size doesn't seem to hurt working implementations we just use it everywhere.
+		  const uint batch_size=1024;
+
 		  // Draw the colour-zero triangles
-		  glDrawElements(GL_TRIANGLES,3*it->triangles_of_colour0(),GL_UNSIGNED_INT,&(it->triangle(0).vertex(0)));
+		  for (uint t=0;t<it->triangles_of_colour0();t+=batch_size)
+		    {
+		      glDrawRangeElements
+			(
+			 GL_TRIANGLES,
+			 0,
+			 it->vertices()-1,
+			 3*std::min(batch_size,static_cast<uint>(it->triangles_of_colour0()-t)),
+			 GL_UNSIGNED_INT,
+			 &(it->triangle(t).vertex(0))
+			 );
+		      if (building_display_list)
+			{
+			  std::cerr << ".";
+			}
+		    }
 		  
 		  // Switch to alternate colour and draw the colour-one triangles
 		  glColorPointer(3,GL_UNSIGNED_BYTE,sizeof(Vertex),&(it->vertex(0).colour(1).r));
-		  glDrawElements(GL_TRIANGLES,3*it->triangles_of_colour1(),GL_UNSIGNED_INT,&(it->triangle(it->triangles_of_colour0()).vertex(0)));
+
+		  for (uint t=it->triangles_of_colour0();t<it->triangles();t+=batch_size)
+		    {
+		      glDrawRangeElements
+			(
+			 GL_TRIANGLES,
+			 0,
+			 it->vertices()-1,
+			 3*std::min(batch_size,static_cast<uint>(it->triangles()-t)),
+			 GL_UNSIGNED_INT,
+			 &(it->triangle(t).vertex(0))
+			 );
+		      if (building_display_list)
+			{
+			  std::cerr << ".";
+			}
+		    }
 		  
 		  glDisable(GL_COLOR_MATERIAL);
 		}
@@ -195,8 +272,12 @@ void TriangleMeshViewerDisplay::paintGL()
 		  glBegin(GL_TRIANGLES);
 		  for (unsigned int t=0;t<it->triangles();t++)
 		    {
-		      const uint c=(t<it->triangles_of_colour0() ? 0 : 1);
-		      
+		      if (building_display_list && (t&0x3ff) == 0)
+			{
+			  std::cerr << ".";
+			}
+
+		      const uint c=(t<it->triangles_of_colour0() ? 0 : 1);		      
 		      for (uint i=0;i<3;i++)
 			{
 			  const uint vn=it->triangle(t).vertex(i);
@@ -237,11 +318,13 @@ void TriangleMeshViewerDisplay::paintGL()
       if (building_display_list)
 	{
 	  glEndList();
-	  std::cerr << "...built display list\n";
+	  std::cerr << "\n...built display list\n";
 	}
     }
 
   glFlush();
+
+  check_for_gl_errors("TriangleMeshViewerDisplay::paintGL");
 
   // Get time taken since last frame
   const uint dt=frame_time.restart();
@@ -273,9 +356,16 @@ void TriangleMeshViewerDisplay::paintGL()
 	    n_vertices+=mesh[m]->vertices();
 	  }
       }
-    report << "Triangles: " << n_triangles << "\n";
-    report << "Vertices : " << n_vertices << "\n";
-    report << "FPS (av) : " << fps << "\n";
+    report 
+      << "Triangles: " 
+      << n_triangles
+      << ", "
+      << "Vertices: " 
+      << n_vertices 
+      << ", "
+      << "FPS: " 
+      << fps 
+      << "\n";
     
     parameters->notify->notify(report.str());
     frame_time_reported.restart();
@@ -330,7 +420,7 @@ void TriangleMeshViewerDisplay::resizeGL(int w,int h)
 
 void TriangleMeshViewerDisplay::draw_frame(const XYZ& p,const XYZ& l,const XYZ& u,float r,float t)
 {
-  frame++;
+  frame_number++;
 
   camera_position=p;
   camera_lookat=l;

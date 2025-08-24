@@ -1,5 +1,5 @@
 // Source file for fracplanet
-// Copyright (C) 2002,2003 Tim Day
+// Copyright (C) 2006 Tim Day
 /*
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -23,15 +23,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _triangle_mesh_terrain_h_
 #define _triangle_mesh_terrain_h_
 
-#include "triangle_mesh.h"
+#include "image.h"
 #include "parameters_terrain.h"
+#include "triangle_mesh.h"
 
 //! This class holds all the terrain-related methods.  
 /*! It's intended to be used as a "mix-in", adding terrain generating 
   functionality to terrain objects subclassed from simpler geometries.
-  \todo Ugh!!!  This is really yucky use of multiple inheritance.  Switch to a "Factory" pattern.
+  \todo Ugh!!!  This is really yucky use of multiple inheritance.  Better for these terrain types to have-a TriangleMesh.
  */
-class TriangleMeshTerrain : virtual TriangleMesh
+class TriangleMeshTerrain : virtual public TriangleMesh
 {
  protected:
   //! Indices of the set of triangles with all vertices at sea-level
@@ -78,6 +79,9 @@ class TriangleMeshTerrain : virtual TriangleMesh
   /*! Unlike write_povray there are no specialisations for flat/spherical terrain.
    */
   virtual void write_blender(std::ofstream& out,const ParametersSave&,const ParametersTerrain&,const std::string& mesh_name) const;
+
+  //! Render the mesh onto raster images (colour texture, and optionally 16-bit DEM and/or normal map).
+  virtual void render_texture(Raster<ByteRGBA>&,Raster<ushort>*,Raster<ByteRGBA>*,bool shading,float ambient,const XYZ& illumination) const;
 };
 
 //! Class constructing specific case of a planetary terrain.

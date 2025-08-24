@@ -1,5 +1,5 @@
 // Source file for fracplanet
-// Copyright (C) 2002,2003 Tim Day
+// Copyright (C) 2006 Tim Day
 /*
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -41,6 +41,8 @@ class TriangleMeshViewerDisplay : public QGLWidget
 {
  private:
   Q_OBJECT;
+
+  void check_for_gl_errors(const char*) const;
   
  protected:
   //! The meshes being displayed.
@@ -55,7 +57,7 @@ class TriangleMeshViewerDisplay : public QGLWidget
   uint gl_display_list_index;
 
   //! Frame count.
-  uint frame;
+  uint frame_number;
   
   //! Display area width.
   uint width;

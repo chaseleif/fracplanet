@@ -23,10 +23,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _parameters_render_h_
 #define _parameters_render_h_
 
+#include <boost/program_options/variables_map.hpp>
+#include <boost/program_options/options_description.hpp>
+
 #include "useful.h"
 
 #include "notifiable.h"
 #include "rgb.h"
+
+class XYZ;
 
 //! Aggregates controllable parameters for all things related to OpenGL rendering.
 class ParametersRender
@@ -44,6 +49,12 @@ public:
   //! Amount of global ambient illumination (0-1)
   float ambient;
 
+  //! Controls illumination direction.
+  float illumination_azimuth;
+
+  //! Controls illumination direction.
+  float illumination_elevation;
+
   //! Background colour at low altitude
   FloatRGBA background_colour_low;
 
@@ -57,10 +68,15 @@ public:
   Notifiable* notify;
 
   //! Constructor.
-  ParametersRender();
+  ParametersRender(const boost::program_options::variables_map& opts);
 
   //! Destructor.
   ~ParametersRender();
+
+  //! Illumination direction computed from azimuth and elevation angles
+  const XYZ illumination_direction() const;
+
+  static boost::program_options::options_description options();
 };
 
 #endif

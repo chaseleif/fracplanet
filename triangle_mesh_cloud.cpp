@@ -44,6 +44,57 @@ void TriangleMeshCloud::write_blender(std::ofstream& out,const ParametersSave& p
      );
 }
 
+namespace 
+{
+  class ScanConvertHelper : public ScanConvertBackend
+  {
+  public:
+    ScanConvertHelper(Raster<uchar>& image,const boost::array<float,3>& vertex_colours)
+      :ScanConvertBackend(image.width(),image.height())
+      ,_image(image)
+      ,_vertex_colours(vertex_colours)
+    {}
+    virtual ~ScanConvertHelper()
+    {}
+    virtual void scan_convert_backend(uint /*y*/,const ScanEdge& /*edge0*/,const ScanEdge& /*edge1*/) const
+    {}
+    virtual void subdivide(const boost::array<XYZ,3>& /*v*/,const XYZ& /*m*/,const ScanConverter& /*scan_converter*/) const
+    {}
+  private:
+    Raster<uchar>& _image;
+    const boost::array<float,3>& _vertex_colours;
+  };
+}
+
+void TriangleMeshCloud::render_texture(Raster<uchar>& image) const
+{
+  assert(false);
+  image.fill(0);
+  for (uint i=0;i<triangles();i++)
+    {
+      const Triangle& t=triangle(i);
+      const boost::array<XYZ,3> vertex_positions
+	={
+	  vertex(t.vertex(0)).position(),
+	  vertex(t.vertex(1)).position(),
+	  vertex(t.vertex(2)).position()
+	};
+      const boost::array<float,3> vertex_colours
+	={
+	  FloatRGBA(vertex(t.vertex(0)).colour(0)).a,
+	  FloatRGBA(vertex(t.vertex(1)).colour(0)).a,
+	  FloatRGBA(vertex(t.vertex(2)).colour(0)).a
+	};
+
+      ScanConvertHelper scan_convert_backend(image,vertex_colours);
+      geometry().scan_convert
+	(
+	 vertex_positions,
+	 scan_convert_backend
+	 );
+    }
+}
+
 void TriangleMeshCloud::do_cloud(const ParametersCloud& parameters)
 {
   compute_vertex_normals();
@@ -81,7 +132,7 @@ void TriangleMeshCloud::do_cloud(const ParametersCloud& parameters)
   Random01 r01(parameters.seed);
   const uint steps=100*vertices();
   uint step=0;
-  if (false) //for (uint i=0;i<0;i++) // Number of twisters parameter
+  for (uint i=0;i<parameters.weather_systems;i++)
     {
       const uint random_vertex=static_cast<uint>(r01()*vertices());
       const XYZ position(vertex(random_vertex).position());
@@ -105,7 +156,7 @@ void TriangleMeshCloud::do_cloud(const ParametersCloud& parameters)
 	      const float rotation_angle=strength*exp(-10.0*distance);
 	      
 	      // Now rotate p about axis through position by the rotation angle
-	      // TODO: Optimise.  axis and position is the same for all points; we're constantly recomputing the basis change matrices.
+	      // TODO: Optimise!  axis and position is the same for all points; we're constantly recomputing the basis change matrices.
 	      // Create a stateful version of Matrix34RotateAboutAxisThrough.
 	      vertex(j).position
 		(

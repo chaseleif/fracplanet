@@ -1,7 +1,7 @@
 TEMPLATE = app
 
 # append debug or release :
-CONFIG+= qt opengl stl release
+CONFIG+= qt opengl stl exceptions release
 
 # Input files
 
@@ -14,6 +14,7 @@ HEADERS += \
            dialog_documentation.h \
            fracplanet_main.h \
            geometry.h \
+           image.h \
            license.h \
            matrix33.h \
            matrix34.h \
@@ -28,6 +29,7 @@ HEADERS += \
            progress.h \
            random.h \
            rgb.h \
+           scan.h \
            triangle.h \
            triangle_mesh.h \
            triangle_mesh_cloud.h \
@@ -49,6 +51,7 @@ SOURCES += \
            fracplanet.cpp \
            fracplanet_main.cpp \
            geometry.cpp \
+           image.cpp \
            license.cpp \
            matrix33.cpp \
            matrix34.cpp \
@@ -63,6 +66,7 @@ SOURCES += \
            progress.cpp \
            random.cpp \
            rgb.cpp \
+           scan.cpp \
            triangle.cpp \
            triangle_mesh.cpp \
            triangle_mesh_cloud.cpp \
@@ -73,6 +77,9 @@ SOURCES += \
            vertex.cpp \
            triangle_edge.cpp \
            xyz.cpp
+
+#LIBS += -lboost_program_options-gcc-mt-1_32
+LIBS += -lboost_program_options
 
 #######################################
 # Version numbering.  This is ENTIRELY controlled by what is echoed by the VERSION script
