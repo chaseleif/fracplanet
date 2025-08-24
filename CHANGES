@@ -1,3 +1,8 @@
+From release 0.3.2:
+ - Bump version number to 0.3.3 (dev while under development)
+ - Add menu entry
+ - Update for etch & edgy (warning free c++, package building)
+
 From release 0.3.1:
  - Bump version number to 0.3.2 (dev while under development)
  - Reinstate weather systems (spinbox to control number).
