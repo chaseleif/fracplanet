@@ -1,4 +1,13 @@
-From release 0.0.0.0:
+From release 0.0.1:
+ - Bump version number to 0.0.3 (0.0.2 omitted docs)
+ - Add fracplanet.htm, fracplanet.css user documentation.
+ - Minor changes to code (compiles on RH9)
+ - Tweak doxygen.cfg 
+ - Display list option
+ - Frame rate display
+ - VERSION and mktgz done evolvotron style
+
+From release 0.0.0:
  - CHANGES file added.
  - lake_becomes_sea initialisation changed from 5 to 0.05 (so displays "5" on controls instead of "100").
  - Remove .qmake.internal.cache from CVS control (don't you just HATE it when that happens)
@@ -6,6 +15,4 @@ From release 0.0.0.0:
  - Add colour picking to GUI.
  - Bump version number to 0.0.1 (appears only in control_about.cpp)
  - Generated .pov file correctly includes basename.inc (was always including terrain.inc before).
-
- 
 

@@ -1,5 +1,5 @@
 // Source file for fracplanet
-// Copyright (C) 2002 Tim Day
+// Copyright (C) 2002,2003 Tim Day
 /*
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -17,10 +17,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "control_render.h"
 
-ControlRender::ControlRender(QWidget* parent,ParametersRender*const param)
+#include <iostream>
+
+ControlRender::ControlRender(QWidget* parent,ParametersRender* param)
   :QVBox(parent)
    ,parameters(param)
 {
+  parameters->notify=this;
+
   wireframe=new QCheckBox("Wireframe",this);
   wireframe->setChecked(parameters->wireframe);
   QToolTip::add(wireframe,"Selects wireframe OpenGL rendering");
@@ -29,6 +33,22 @@ ControlRender::ControlRender(QWidget* parent,ParametersRender*const param)
 	  this,SLOT(setWireframe(int))
 	  );
 
+  display_list=new QCheckBox("Display list",this);
+  display_list->setChecked(parameters->display_list);
+  QToolTip::add(display_list,"Selects OpenGL rendering via display_list");
+  connect(
+	  display_list,SIGNAL(stateChanged(int)),
+	  this,SLOT(setDisplayList(int))
+	  );
+
+  new QLabel("Status:",this);
+  status=new QLabel("",this);
+
   padding=new QVBox(this);
   setStretchFactor(padding,1);
+}
+
+void ControlRender::notify(const std::string& message)
+{
+  status->setText(message.c_str());
 }

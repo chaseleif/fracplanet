@@ -1,5 +1,5 @@
 // Source file for fracplanet
-// Copyright (C) 2002 Tim Day
+// Copyright (C) 2002,2003 Tim Day
 /*
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -25,7 +25,7 @@ TriangleMeshViewer::TriangleMeshViewer(QWidget* parent,const ParametersRender* p
 
   display=new TriangleMeshViewerDisplay(this,param,mesh);
 
-  elevation_box=new QGroupBox(1,Qt::Horizontal,"Elevation",this);
+  elevation_box=new QGroupBox(1,Qt::Horizontal,"Tilt",this);
   spinrate_box=new QGroupBox(1,Qt::Horizontal,"Spin Rate",this);
 
   elevation_slider=new QSlider(-80,80,10, 0,Qt::Vertical,elevation_box);

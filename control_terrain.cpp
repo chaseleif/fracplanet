@@ -1,5 +1,5 @@
 // Source file for fracplanet
-// Copyright (C) 2002 Tim Day
+// Copyright (C) 2002,2003 Tim Day
 /*
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -32,7 +32,7 @@ QIconSet ControlTerrain::build_icon_of_colour(const FloatRGB& col)
 
 /*! Lots of tedious code to instantiate controls and wire things up.
  */
-ControlTerrain::ControlTerrain(QWidget* parent,FracplanetMain* tgt,ParametersTerrain*const param)
+ControlTerrain::ControlTerrain(QWidget* parent,FracplanetMain* tgt,ParametersTerrain* param)
   :QVBox(parent)
    ,parameters(param)
    ,regenerate_target(tgt)
@@ -194,6 +194,21 @@ ControlTerrain::ControlTerrain(QWidget* parent,FracplanetMain* tgt,ParametersTer
 	  this,SLOT(setLakeBecomesSea(int))
 	  );
   QToolTip::add(lake_becomes_sea_spinbox,"The percentage of planetary surface which must be covered by a lake for it to be considered a sea");
+
+  /*
+    {
+      //! \todo Reinstate emissive slider for next release
+      new QLabel("Emissive oceans & rivers",grid);
+      QHBox* oceans_and_rivers_emissive_box=new QHBox(grid);
+      new QLabel("0.0",oceans_and_rivers_emissive_box);
+      oceans_and_rivers_emissive_slider=new QSlider(0,100,10,(uint)(100.0*parameters->oceans_and_rivers_emissive),Qt::Horizontal,oceans_and_rivers_emissive_box);
+      new QLabel("1.0",oceans_and_rivers_emissive_box);
+      connect(
+	      oceans_and_rivers_emissive_slider,SIGNAL(valueChanged(int)),
+	      this,SLOT(setOceansAndRiversEmissive(int))
+	      );
+    }
+  */
 
   colour_label=new QLabel("Change colours:",this);
   colour_grid=new QGrid(3,Qt::Horizontal,this);

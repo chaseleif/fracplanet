@@ -1,5 +1,5 @@
 // Source file for fracplanet
-// Copyright (C) 2002 Tim Day
+// Copyright (C) 2002,2003 Tim Day
 /*
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -15,6 +15,11 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
+
+/*! \file
+  \brief Interface for class ControlRender.
+*/
+
 #ifndef _control_render_h_
 #define _control_render_h_
 
@@ -37,7 +42,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "parameters_render.h"
 
 //! Encapsulates GUI elements for controlling OpenGL rendering.
-class ControlRender : public QVBox
+class ControlRender : public QVBox, public Notifiable
 {
  private:
   Q_OBJECT;
@@ -46,16 +51,27 @@ class ControlRender : public QVBox
   ParametersRender*const parameters;
 
   QCheckBox* wireframe;
+  QCheckBox* display_list;
+
+  QLabel* status;
 
   QVBox* padding;
  public:
   ControlRender(QWidget* parent,ParametersRender* param);
+
+  virtual void notify(const std::string& message);
   
   public slots:
-    void setWireframe(int v)
-  {
-    parameters->wireframe=(v==2);
-  }
+    
+  void setWireframe(int v)
+    {
+      parameters->wireframe=(v==2);
+    }
+  
+  void setDisplayList(int v)
+    {
+      parameters->display_list=(v==2);
+    }
 };
 
 #endif

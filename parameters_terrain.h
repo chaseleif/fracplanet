@@ -1,5 +1,5 @@
 // Source file for fracplanet
-// Copyright (C) 2002 Tim Day
+// Copyright (C) 2002,2003 Tim Day
 /*
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -15,6 +15,11 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
+
+/*! \file
+  \brief Interface for class ParametersTerrain.
+*/
+
 #ifndef _parameters_terrain_h_
 #define _parameters_terrain_h_
 
@@ -22,10 +27,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "xyz.h"
 #include "rgb.h"
 
-//! Aggregates controllable parameters for all things related to terrain generation.
+//! This class aggregates the controllable parameters for all things related to terrain generation.
 /*! \todo Add these to ParametersTerrain (and ControlTerrain):  float treeline;  float beachline;
 */
-
 class ParametersTerrain
 {
 public:
@@ -79,13 +83,19 @@ public:
   /*! When lakes (produced during the river-growing step) cover this fraction of the available terrain they become seas and no-longer need to find a drain.
    */
   float lake_becomes_sea;
+  
+  //! Amount of emissive colour for oceans and rivers.
+  float oceans_and_rivers_emissive;
 
+  //@{
+  //! Colour for a terrain type.
   FloatRGB colour_ocean;
   FloatRGB colour_river;
   FloatRGB colour_shoreline;
   FloatRGB colour_low;
   FloatRGB colour_high;
   FloatRGB colour_snow;
+  //@}
 
   //! Constructor sets up some hopefully sensible defaults.
   ParametersTerrain();

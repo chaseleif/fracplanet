@@ -1,5 +1,5 @@
 // Source file for fracplanet
-// Copyright (C) 2002 Tim Day
+// Copyright (C) 2002,2003 Tim Day
 /*
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -15,6 +15,11 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
+
+/*! \file
+  \brief Interface for class ControlTerrain.
+*/
+
 #ifndef _control_terrain_h_
 #define _control_terrain_h_
 
@@ -108,6 +113,8 @@ class ControlTerrain : public QVBox
   QPushButton* colour_snow_button;
   QPushButton* colour_high_button;
 
+  QSlider* oceans_and_rivers_emissive_slider;
+
   QPushButton* regenerate_button;
   QPushButton* regenerate_with_new_seed_button;
   QPushButton* regenerate_rivers_with_new_seed_button;
@@ -192,6 +199,10 @@ class ControlTerrain : public QVBox
   void setLakeBecomesSea(int v)
     {
       parameters->lake_becomes_sea=v/100.0;
+    }
+  void setOceansAndRiversEmissive(int v)
+    {
+      parameters->oceans_and_rivers_emissive=v/100.0;
     }
   void pickColourOcean()
     {

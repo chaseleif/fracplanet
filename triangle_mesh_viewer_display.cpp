@@ -1,5 +1,5 @@
 // Source file for fracplanet
-// Copyright (C) 2002 Tim Day
+// Copyright (C) 2002,2003 Tim Day
 /*
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -18,6 +18,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "triangle_mesh_viewer_display.h"
 
 #include <iostream>
+#include <sstream>
+#include <iomanip>
+#include <numeric>
 
 TriangleMeshViewerDisplay::TriangleMeshViewerDisplay(QWidget* parent,const ParametersRender* param,const TriangleMesh* m)
   :QGLWidget(parent)
@@ -26,6 +29,7 @@ TriangleMeshViewerDisplay::TriangleMeshViewerDisplay(QWidget* parent,const Param
    ,frame(0)
    ,width(0)
    ,height(0)
+   ,frame_time()
    ,camera_elevation(0.0)
    ,camera_spin_rate(0.0)
    ,camera_azimuth(0.0)
@@ -33,15 +37,27 @@ TriangleMeshViewerDisplay::TriangleMeshViewerDisplay(QWidget* parent,const Param
 {
   timer=new QTimer(this);
   
+  frame_time.start();
+  frame_time_reported.start();
+
   connect(timer,SIGNAL(timeout()),this,SLOT(tick()));
   
-  // Set timer to tick at 100Hz (like we'll ever be able to render that fast :^)
-  timer->start(10);
+  timer->start(static_cast<int>(ceil(1000.0f/parameters->fps_target)));
+
+  // Zero is not a valid value according to red book, so use it to designate unset
+  gl_display_list_index=0;
 }
 
 void TriangleMeshViewerDisplay::set_mesh(const TriangleMesh* m)
 {
   mesh=m;
+
+  // If there is a display list allocated for the current mesh, delete it.
+  if (gl_display_list_index!=0)
+    {
+      glDeleteLists(gl_display_list_index,1);
+      gl_display_list_index=0;
+    }  
 }
 
 void TriangleMeshViewerDisplay::paintGL()
@@ -56,23 +72,73 @@ void TriangleMeshViewerDisplay::paintGL()
   glRotatef((180.0/M_PI)*camera_azimuth,0.0,0.0,1.0);
 
   glPolygonMode(GL_FRONT,(parameters->wireframe ? GL_LINE : GL_FILL));
+  
+  if (parameters->display_list && gl_display_list_index!=0)
+    {
+      glCallList(gl_display_list_index);
+    }
+  else
+    {
+      bool building_display_list=(parameters->display_list && gl_display_list_index==0);
 
-  GLfloat default_material[3]={1.0,1.0,1.0};
-  glMaterialfv(GL_FRONT,GL_DIFFUSE,default_material);
+      if (building_display_list)
+	{
+	  gl_display_list_index=glGenLists(1);
+	  glNewList(gl_display_list_index,GL_COMPILE_AND_EXECUTE);
+	  std::cerr << "Building display list...\n";
+	}
 
-  // Point GL at arrays of data
-  glVertexPointer(3,GL_FLOAT,sizeof(Vertex),&(mesh->vertex(0).position().x));
-  glNormalPointer(GL_FLOAT,sizeof(Vertex),&(mesh->vertex(0).normal().x));
-  glColorPointer(3,GL_UNSIGNED_BYTE,sizeof(Vertex),&(mesh->vertex(0).colour(0).r));
+      GLfloat default_material[3]={1.0,1.0,1.0};
+      glMaterialfv(GL_FRONT,GL_DIFFUSE,default_material);
 
-  // Draw the colour-zero triangles
-  glDrawElements(GL_TRIANGLES,3*mesh->triangles_of_colour0(),GL_UNSIGNED_INT,&(mesh->triangle(0).vertex(0)));
+      // Point GL at arrays of data
+      glVertexPointer(3,GL_FLOAT,sizeof(Vertex),&(mesh->vertex(0).position().x));
+      glNormalPointer(GL_FLOAT,sizeof(Vertex),&(mesh->vertex(0).normal().x));
+      glColorPointer(3,GL_UNSIGNED_BYTE,sizeof(Vertex),&(mesh->vertex(0).colour(0).r));
 
-  // Switch to alternate colour and draw the colour-one triangles
-  glColorPointer(3,GL_UNSIGNED_BYTE,sizeof(Vertex),&(mesh->vertex(0).colour(1).r));
-  glDrawElements(GL_TRIANGLES,3*mesh->triangles_of_colour1(),GL_UNSIGNED_INT,&(mesh->triangle(mesh->triangles_of_colour0()).vertex(0)));
+      // Draw the colour-zero triangles
+      glDrawElements(GL_TRIANGLES,3*mesh->triangles_of_colour0(),GL_UNSIGNED_INT,&(mesh->triangle(0).vertex(0)));
+
+      // Switch to alternate colour and draw the colour-one triangles
+      glColorPointer(3,GL_UNSIGNED_BYTE,sizeof(Vertex),&(mesh->vertex(0).colour(1).r));
+      glDrawElements(GL_TRIANGLES,3*mesh->triangles_of_colour1(),GL_UNSIGNED_INT,&(mesh->triangle(mesh->triangles_of_colour0()).vertex(0)));
+
+      if (building_display_list)
+	{
+	  glEndList();
+	  std::cerr << "...built display list\n";
+	}
+    }
 
   glFlush();
+
+  // Get time taken since last frame
+  const uint dt=frame_time.restart();
+
+  // Save it in the queue
+  frame_times.push_back(dt);
+
+  // Keep last 10 frame times
+  while (frame_times.size()>10) frame_times.pop_front();
+
+  // Only update frame time a couple of times a second to reduce flashing
+  if (parameters->notify && frame_time_reported.elapsed()>500)
+  {    
+    const float average_time=std::accumulate(frame_times.begin(),frame_times.end(),0)/static_cast<float>(frame_times.size());
+   
+    const float fps=1000.0/average_time;
+
+    std::ostringstream report;
+    report.setf(std::ios::fixed);
+    report.precision(1);
+    
+    report << "Triangles: " << mesh->triangles() << "\n";
+    report << "Vertices : " << mesh->vertices() << "\n";
+    report << "FPS (av) : " << fps << "\n";
+    
+    parameters->notify->notify(report.str());
+    frame_time_reported.restart();
+  }
 }
 
 void TriangleMeshViewerDisplay::initializeGL()

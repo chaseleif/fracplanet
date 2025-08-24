@@ -1,5 +1,5 @@
 // Source file for fracplanet
-// Copyright (C) 2002 Tim Day
+// Copyright (C) 2002,2003 Tim Day
 /*
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -21,8 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 ControlAbout::ControlAbout(QWidget* parent)
   :QVBox(parent)
 {
-  label=new QLabel("\nFracplanet 0.0.1\n\nAuthor\ntimday@timday.com\n\nHome page\nhttp://fracplanet.sourceforge.net\n\nProject page\nhttp://sourceforge.net/projects/fracplanet\n\nLicense:",this);
-  //label=new QLabel("Fracplanet 0.0.1",this);
+  label=new QLabel("\nFracplanet - version "+QString(FRACPLANET_VERSION)+"\n\nAuthor\ntimday@timday.com\n\nHome page\nhttp://fracplanet.sourceforge.net\n\nProject page\nhttp://sourceforge.net/projects/fracplanet\n\nLicense:",this);
   label->setAlignment(Qt::AlignHCenter|label->alignment());
 
   license=new QTextEdit(this);
