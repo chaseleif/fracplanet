@@ -60,11 +60,18 @@ ControlTerrain::ControlTerrain(QWidget* parent,FracplanetMain* tgt,ParametersTer
   QVBox* tab_clouds=new QVBox(tabs);
   tabs->addTab(tab_clouds,"Clouds");
 
-  QComboBox* object_type_combo_box=new QComboBox(false,tab_terrain_basics);
-  object_type_combo_box->insertItem("Generate Planet",  Parameters::ObjectTypePlanet);
-  object_type_combo_box->insertItem("Generate Hexagonal Area", Parameters::ObjectTypeFlatHexagon);
-  object_type_combo_box->insertItem("Generate Triangular Area",Parameters::ObjectTypeFlatTriangle);
-  object_type_combo_box->insertItem("Generate Square Area",  Parameters::ObjectTypeFlatSquare);
+
+  QGrid*const grid_terrain_basics=new QGrid(2,Qt::Horizontal,tab_terrain_basics);
+  QGrid*const grid_terrain_subdivision=new QGrid(2,Qt::Horizontal,tab_terrain_subdivision);
+  QGrid*const grid_terrain_noise=new QGrid(2,Qt::Horizontal,tab_terrain_noise);
+
+  new QLabel("Generate:",grid_terrain_basics);
+
+  QComboBox* object_type_combo_box=new QComboBox(false,grid_terrain_basics);
+  object_type_combo_box->insertItem("Planet",  ParametersObject::ObjectTypePlanet);
+  object_type_combo_box->insertItem("Hexagonal Area", ParametersObject::ObjectTypeFlatHexagon);
+  object_type_combo_box->insertItem("Triangular Area",ParametersObject::ObjectTypeFlatTriangle);
+  object_type_combo_box->insertItem("Square Area",  ParametersObject::ObjectTypeFlatSquare);
 
   object_type_combo_box->setCurrentItem(parameters_terrain->object_type);
 
@@ -73,10 +80,6 @@ ControlTerrain::ControlTerrain(QWidget* parent,FracplanetMain* tgt,ParametersTer
 	  this,SLOT(setObjectType(int))
 	  );
   
-  QGrid*const grid_terrain_basics=new QGrid(2,Qt::Horizontal,tab_terrain_basics);
-  QGrid*const grid_terrain_subdivision=new QGrid(2,Qt::Horizontal,tab_terrain_subdivision);
-  QGrid*const grid_terrain_noise=new QGrid(2,Qt::Horizontal,tab_terrain_noise);
-
   base_height_label=new QLabel("Base land height (%):",grid_terrain_basics);
   base_height_spinbox=new QSpinBox(-100,100,10,grid_terrain_basics);
   base_height_spinbox->setValue((uint)(100.0*parameters_terrain->base_height));
@@ -133,7 +136,7 @@ ControlTerrain::ControlTerrain(QWidget* parent,FracplanetMain* tgt,ParametersTer
 
   noise_terms_label=new QLabel("Noise terms",grid_terrain_noise);
   noise_terms_spinbox=new QSpinBox(0,10,1,grid_terrain_noise);
-  noise_terms_spinbox->setValue(parameters_terrain->noise_terms);
+  noise_terms_spinbox->setValue(parameters_terrain->noise.terms);
   connect(
 	  noise_terms_spinbox,SIGNAL(valueChanged(int)),
 	  this,SLOT(setNoiseTerms(int))
@@ -142,7 +145,7 @@ ControlTerrain::ControlTerrain(QWidget* parent,FracplanetMain* tgt,ParametersTer
 
   noise_frequency_label=new QLabel("Noise frequency",grid_terrain_noise);
   noise_frequency_spinbox=new QSpinBox(0,10000,10,grid_terrain_noise);
-  noise_frequency_spinbox->setValue(static_cast<int>(100*parameters_terrain->noise_frequency));
+  noise_frequency_spinbox->setValue(static_cast<int>(100*parameters_terrain->noise.frequency));
   connect(
 	  noise_frequency_spinbox,SIGNAL(valueChanged(int)),
 	  this,SLOT(setNoiseFrequency(int))
@@ -151,7 +154,7 @@ ControlTerrain::ControlTerrain(QWidget* parent,FracplanetMain* tgt,ParametersTer
 
   noise_amplitude_label=new QLabel("Noise amplitude",grid_terrain_noise);
   noise_amplitude_spinbox=new QSpinBox(0,100,1,grid_terrain_noise);
-  noise_amplitude_spinbox->setValue(static_cast<int>(100*parameters_terrain->noise_amplitude));  
+  noise_amplitude_spinbox->setValue(static_cast<int>(100*parameters_terrain->noise.amplitude));  
   connect(
 	  noise_amplitude_spinbox,SIGNAL(valueChanged(int)),
 	  this,SLOT(setNoiseAmplitude(int))
@@ -160,7 +163,7 @@ ControlTerrain::ControlTerrain(QWidget* parent,FracplanetMain* tgt,ParametersTer
 
   noise_amplitude_decay_label=new QLabel("Noise amplitude decay rate",grid_terrain_noise);
   noise_amplitude_decay_spinbox=new QSpinBox(0,100,10,grid_terrain_noise);
-  noise_amplitude_decay_spinbox->setValue(static_cast<int>(100*parameters_terrain->noise_amplitude_decay));  
+  noise_amplitude_decay_spinbox->setValue(static_cast<int>(100*parameters_terrain->noise.amplitude_decay));  
   connect(
 	  noise_amplitude_decay_spinbox,SIGNAL(valueChanged(int)),
 	  this,SLOT(setNoiseAmplitudeDecay(int))

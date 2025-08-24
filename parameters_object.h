@@ -1,5 +1,5 @@
 // Source file for fracplanet
-// Copyright (C) 2002,2003 Tim Day
+// Copyright (C) 2006 Tim Day
 /*
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -17,42 +17,40 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 /*! \file
-  \brief Interface for class Random and derived classes.
+  \brief Interface for class Parameters.
 */
 
-#ifndef _random_h_
-#define _random_h_
+#ifndef _parameters_h_
+#define _parameters_h_
 
 #include "useful.h"
 
-#include <boost/random.hpp>
-
-//! Generates random numbers in the range [0,1).
-class Random01
+//! Common base for ParametersTerrain and ParametersCloud.
+class ParametersObject
 {
-public:
-  // Constructor.  Argument is seed value.
-  Random01(uint s=0);
+ public:
   
-  //! Destructor.
-  ~Random01();
-  
-  // Return random number in 0-1 (don't think we care whether open interval or not).
-  const double operator()()
+  //! What kind of object will be generated.
+  typedef enum
     {
-      return _gen();
+      ObjectTypePlanet,
+      ObjectTypeFlatHexagon,
+      ObjectTypeFlatTriangle,
+      ObjectTypeFlatSquare
     }
-  
- private:
-  boost::mt19937 _rng;
-  boost::uniform_real<> _dist;
-  boost::variate_generator<boost::mt19937,boost::uniform_real<> > _gen;
+  ObjectType;
+
+  //! Kind of object.
+  ObjectType object_type;
+
+  //! Random seed for subdivision and noise.
+  uint seed;
+
+  //! Number of subdivisions.
+  uint subdivisions;
+
+  //! Constructor sets up some hopefully sensible defaults.
+  ParametersObject();
 };
 
 #endif
-
-
-
-
-
-

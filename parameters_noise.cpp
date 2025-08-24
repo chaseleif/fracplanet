@@ -1,5 +1,5 @@
 // Source file for fracplanet
-// Copyright (C) 2002,2003 Tim Day
+// Copyright (C) 2006 Tim Day
 /*
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -16,43 +16,11 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-/*! \file
-  \brief Interface for class Random and derived classes.
-*/
+#include "parameters_noise.h"
 
-#ifndef _random_h_
-#define _random_h_
-
-#include "useful.h"
-
-#include <boost/random.hpp>
-
-//! Generates random numbers in the range [0,1).
-class Random01
-{
-public:
-  // Constructor.  Argument is seed value.
-  Random01(uint s=0);
-  
-  //! Destructor.
-  ~Random01();
-  
-  // Return random number in 0-1 (don't think we care whether open interval or not).
-  const double operator()()
-    {
-      return _gen();
-    }
-  
- private:
-  boost::mt19937 _rng;
-  boost::uniform_real<> _dist;
-  boost::variate_generator<boost::mt19937,boost::uniform_real<> > _gen;
-};
-
-#endif
-
-
-
-
-
-
+ParametersNoise::ParametersNoise(uint n)
+  :terms(n)
+  ,frequency(1.0)
+  ,amplitude(0.125)
+  ,amplitude_decay(0.5)
+{}
